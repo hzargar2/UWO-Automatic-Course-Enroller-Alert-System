@@ -1,5 +1,5 @@
 from course_scraper import *
-import os, time, config, sys, vlc
+import os, time, config, sys, vlc, threading, select
 
 while True:
 
@@ -48,10 +48,8 @@ while flag:
     else:
         for index, bool in enumerate(bools):
             if bool == False:
-                print('{0} not found. Make sure you have spelled the course correctly and have selected the right timetable'.format(
+                print('{0} not found. Make sure you have spelled the course correctly and have selected the right timetable.'.format(
                         courses[index]))
-
-
 
 p = vlc.MediaPlayer("Red Alert-SoundBible.com-108009997.mp3")
 
@@ -64,11 +62,24 @@ while len(courses) > 0:
 
         if scraper.course_is_not_full(course_name, course_number):
 
-            p.play()
-            os.system('say "course {0} {1} is now available"'.format(course_name, course_number))
+            i = 0
+            while True:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("Press <Enter> to stop me alert!")
+
+                p = vlc.MediaPlayer("Red Alert-SoundBible.com-108009997.mp3")
+                p.play()
+                os.system('say "the course {0} {1} is now available"'.format(course_name, course_number))
+
+                if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+                    line = input()
+                    break
+                i += 1
 
             del courses[index]
 
 
     time.sleep(5)
+
+
 

@@ -10,8 +10,9 @@ class CourseScraper:
         self.browser = webdriver.Chrome(chromedriverpath)
         self.browser.get(timetable_url)
 
-    def course_is_not_full(self, course_name: str, course_number: str):
+    def course_is_not_full(self, course_name: str, course_number: str, class_nbr: str):
 
+        self.browser.find_element_by_id("inputCatalognbr").clear()
         course_number_field = self.browser.find_element_by_id("inputCatalognbr")
         course_number_field.send_keys(course_number)
 
@@ -24,22 +25,24 @@ class CourseScraper:
 
         for index, course in enumerate(courses_in_search):
 
-            if course_name in course.text.split(' ')[0] and course_number in course.text.split(' ')[1]:
+            if course_name.lower() in course.text.split(' ')[0].lower() and course_number.lower() in course.text.split(' ')[1].lower():
                 course_slot_table = courses_in_search[index].find_next('tbody')
                 # get every other because 'tr' in between is table data, not useful
                 course_slots = course_slot_table.find_all('tr')[::2]
 
                 for course_slot in course_slots:
                     course_component = course_slot.find_all('td')[1].text
+                    class_number = course_slot.find_all('td')[2].text
                     course_status = course_slot.find_all('td')[14].text.strip()
 
-                    if course_component == 'LEC' and course_status == 'Not Full':
+                    if course_component == 'LEC' and course_status == 'Not Full' and class_number == class_nbr:
                         return True
 
         return False
 
-    def course_exists(self, course_name: str, course_number: str):
+    def course_exists(self, course_name: str, course_number: str, class_nbr: str):
 
+        self.browser.find_element_by_id("inputCatalognbr").clear()
         course_number_field = self.browser.find_element_by_id("inputCatalognbr")
         course_number_field.send_keys(course_number)
 
@@ -52,8 +55,18 @@ class CourseScraper:
 
         for index, course in enumerate(courses_in_search):
 
-            if course_name in course.text.split(' ')[0] and course_number in course.text.split(' ')[1]:
-                return True
+            if course_name.lower() in course.text.split(' ')[0].lower() and course_number.lower() in course.text.split(' ')[1].lower():
+                course_slot_table = courses_in_search[index].find_next('tbody')
+                # get every other because 'tr' in between is table data, not useful
+                course_slots = course_slot_table.find_all('tr')[::2]
+
+                for course_slot in course_slots:
+                    class_number = course_slot.find_all('td')[2].text
+
+                    if class_number == class_nbr:
+                        return True
+
+                # return True
 
         return False
 

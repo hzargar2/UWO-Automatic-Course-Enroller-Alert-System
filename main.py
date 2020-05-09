@@ -26,7 +26,7 @@ flag = True
 while flag:
 
     course_names = input(
-        'Enter the course name(s) as it appears in the timetable, seperated by commas for multiple courses. (Example: COMPSCI 1026A, PSYCHOL 2035B):  ')
+        'Enter the course name(s) followed by the Class Nbr as it appears in the timetable, seperated by commas for multiple courses. Each portion of the course must be seperated by a space. (Example: COMPSCI 1026A 1625, PSYCHOL 2035B 1210):  ')
 
     if course_names == '':
         print('Empty course name. Try again.')
@@ -40,7 +40,8 @@ while flag:
         course = course.strip().split(' ')
         course_name = course[0]
         course_number = course[1]
-        bools.append(scraper.course_exists(course_name, course_number))
+        class_nbr = course[2]
+        bools.append(scraper.course_exists(course_name, course_number, class_nbr))
 
     if all(bool == True for bool in bools):
         flag = False
@@ -48,7 +49,7 @@ while flag:
     else:
         for index, bool in enumerate(bools):
             if bool == False:
-                print('{0} not found. Make sure you have spelled the course correctly and have selected the right timetable.'.format(
+                print('{0} not found. Make sure you have spelled the course name, course code, and class nbr correctly and you have selected the right timetable.'.format(
                         courses[index]))
 
 p = vlc.MediaPlayer("Red Alert-SoundBible.com-108009997.mp3")
@@ -59,8 +60,9 @@ while len(courses) > 0:
         course = course.strip().split(' ')
         course_name = course[0]
         course_number = course[1]
+        class_nbr = course[2]
 
-        if scraper.course_is_not_full(course_name, course_number):
+        if scraper.course_is_not_full(course_name, course_number, class_nbr):
 
             i = 0
             while True:
@@ -69,7 +71,7 @@ while len(courses) > 0:
 
                 p = vlc.MediaPlayer("Red Alert-SoundBible.com-108009997.mp3")
                 p.play()
-                os.system('say "the course {0} {1} is now available"'.format(course_name, course_number))
+                os.system('say "the course {0} {1} with class number {2} is now available"'.format(course_name, course_number, class_nbr))
 
                 if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
                     line = input()

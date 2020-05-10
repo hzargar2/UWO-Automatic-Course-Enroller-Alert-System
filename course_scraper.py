@@ -104,7 +104,6 @@ class CourseScraper:
         except Exception as e:
             print(e)
 
-
     def course_section_exists(self, course_name: str, course_number: str, class_nbr: str):
 
         course_sections = self.__get_all_course_sections(course_name, course_number)

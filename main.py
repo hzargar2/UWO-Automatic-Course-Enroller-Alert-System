@@ -127,7 +127,7 @@ def alert_if_not_full(courses: list, scraper: CourseScraper):
                     while True:
                         os.system('cls' if os.name == 'nt' else 'clear')
                         print("Press <Enter> to stop the alert!")
-                        print('The course {0} {1} with class number {2} is now available!'.format(course_name, course_number, class_nbr))
+                        print('{0} {1} with class number {2} is now available!'.format(course_name.upper(), course_number.upper(), class_nbr))
 
                         # plays sound, once ended, system talks
                         p = vlc.MediaPlayer("Red Alert-SoundBible.com-108009997.mp3")

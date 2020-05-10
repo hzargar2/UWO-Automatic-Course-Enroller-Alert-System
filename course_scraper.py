@@ -121,7 +121,7 @@ class CourseScraper:
 
         return False
 
-    def lecture_is_not_full(self, course_name: str, course_number: str, class_nbr: str):
+    def lecture_is_not_full(self, course_name: str, course_number: str, class_nbr: str) -> bool:
 
         df = self.__get_df_for_all_course_sections_with_component(course_name, course_number, 'LEC')
 
@@ -131,22 +131,20 @@ class CourseScraper:
 
         return False
 
-    def get_lab_components(self, course_name: str, course_number: str):
+    def get_lab_components(self, course_name: str, course_number: str) -> pd.DataFrame:
 
         df = self.__get_df_for_all_course_sections_with_component(course_name, course_number, 'LAB')
         return df
 
-    def get_tutorial_components(self, course_name: str, course_number: str):
+    def get_tutorial_components(self, course_name: str, course_number: str) -> pd.DataFrame:
 
         df = self.__get_df_for_all_course_sections_with_component(course_name, course_number, 'TUT')
         return df
 
-    def get_lecture_components(self, course_name: str, course_number: str):
+    def get_lecture_components(self, course_name: str, course_number: str) -> pd.DataFrame:
 
         df = self.__get_df_for_all_course_sections_with_component(course_name, course_number, 'LEC')
         return df
-
-
 
 
 

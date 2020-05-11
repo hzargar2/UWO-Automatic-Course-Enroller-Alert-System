@@ -1,17 +1,27 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import pandas as pd
+import time
+
 
 class CourseScraper:
 
     def __init__(self, chromedriverpath, timetable_url):
 
-        self.browser = webdriver.Chrome(chromedriverpath)
-        self.browser.get(timetable_url)
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("disable-gpu")
+
+        self.browser = webdriver.Chrome(chromedriverpath, options=chrome_options)
+        self.timetable_url = timetable_url
         self.all_course_sections_df = pd.DataFrame(
             columns=['course_section_number', 'course_component', 'class_nbr', 'instructor_name',
                      'course_notes', 'course_status', 'course_session', 'course_start_date', 'course_end_date',
                      'course_campus'])
+
+    def get_timetable_page(self):
+        self.browser.get(self.timetable_url)
 
     def set_all_course_sections_df(self, course_name: str, course_number: str):
 

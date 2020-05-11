@@ -1,5 +1,5 @@
 from course_scraper import *
-import os, time, config, sys, vlc, threading, select, os
+import time, config, sys, vlc, threading, select, os
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -94,7 +94,7 @@ def get_chrome_path() -> str:
 
     while True:
 
-        chrome_version = input('\nSelect the version of your Google Chrome browser. This can be found in Help -> About Google Chrome. (Enter 1,2, or 3)\n\n'
+        chrome_version = input('\nSelect the version of your Google Chrome browser. This can be found in Help -> About Google Chrome. (ENTER 1,2, or 3)\n\n'
                           'Available options: \n'
                           '1. 80.0.3987.106\n'
                           '2. 81.0.4044.138\n'
@@ -216,6 +216,8 @@ def alert_if_not_full(courses_list: list, course_scraper: CourseScraper):
 
                         print('{0} {1} {2} is full. Will re-try in 5 seconds.'.format(course_name.upper(), course_number.upper(), class_nbr))
 
+                # sleep prevents server from blocking the connection due to too many requests in a short period of time
+                time.sleep(5)
 def main():
 
     timetable_url = get_academic_timetable_url_input()

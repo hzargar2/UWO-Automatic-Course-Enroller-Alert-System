@@ -25,10 +25,10 @@ def get_academic_timetable_url_input() -> str:
             continue
         else:
             if timetable == '1':
-                timetable_url = config.timetable_urls_dict['Summer']
+                timetable_url = config.urls_dict['Summer']
                 return timetable_url
             elif timetable == '2':
-                timetable_url = config.timetable_urls_dict['Fall/Winter']
+                timetable_url = config.urls_dict['Fall/Winter']
                 return timetable_url
 
 def get_courses_list_input() -> list:
@@ -120,16 +120,11 @@ def get_chrome_path() -> str:
         return chrome_path
 
 
-def initialize_scraper(chrome_path, timetable_url):
-
-        # Initialize scraper object with the timetable_url
-        course_scraper = CourseScraper(chrome_path, timetable_url)
-        return course_scraper
-
-
 def courses_exist(courses_list: list, course_scraper: CourseScraper) -> bool:
 
-    # try:
+    try:
+
+        print('Checking if course sections inputted exist in the timetable...')
 
         while True:
 
@@ -143,6 +138,8 @@ def courses_exist(courses_list: list, course_scraper: CourseScraper) -> bool:
 
                 course_scraper.set_all_course_sections_df(course_name, course_number)
 
+                # sleep allows page to load and prevents server from blocking the connection due to too many requests in a short period of time
+                time.sleep(5)
 
                 # checks whether the course inputted by the user exists and appends the return value (boolean) to
                 # the courses_exist list
@@ -150,6 +147,7 @@ def courses_exist(courses_list: list, course_scraper: CourseScraper) -> bool:
 
             # If all values in list are True then they all exist and it returns the courses list containing all of them
             if all(bool == True for bool in course_sections_exists):
+                print('SUCCESS: ALL COURSES INPUTTED FOUND IN THE TIMETABLE\n')
                 return True
 
             # Atleast 1 of the course names inputted doesn't exists and asks the user to re-enter the course names.
@@ -157,16 +155,17 @@ def courses_exist(courses_list: list, course_scraper: CourseScraper) -> bool:
             else:
                 for index, bool in enumerate(course_sections_exists):
                     if bool == False:
-                        print('ERROR: {0} NOT FOUND. Make sure you have spelled the course name, course code, and class nbr correctly and you have selected the right timetable.\n'.format(
+                        print('ERROR: {0} NOT FOUND IN TIMETABLE. Make sure you have spelled the course name, course code, and class nbr correctly and you have selected the right timetable.\n'.format(
                                 courses_list[index].upper().strip()))
-
                 return False
 
-    # except Exception as e:
-    #     print(e)
+    except Exception as e:
+        print(e)
 
 
 def alert_if_not_full(courses_list: list, course_scraper: CourseScraper):
+
+        print('Checking for course section availability... ')
 
         #while there are elements in courses list it checks to see if the class(es) are full or not
         while len(courses_list) > 0:
@@ -177,6 +176,9 @@ def alert_if_not_full(courses_list: list, course_scraper: CourseScraper):
                 class_nbr = course[2]
 
                 course_scraper.set_all_course_sections_df(course_name, course_number)
+
+                # sleep allows page to load and prevents server from blocking the connection due to too many requests in a short period of time
+                time.sleep(10)
 
                 all_course_sections_df = course_scraper.get_all_course_sections_df()
 
@@ -214,17 +216,17 @@ def alert_if_not_full(courses_list: list, course_scraper: CourseScraper):
 
                     elif row['class_nbr'] == class_nbr and row['course_status'] == 'Full':
 
-                        print('{0} {1} {2} is full. Will re-try in 5 seconds.'.format(course_name.upper(), course_number.upper(), class_nbr))
+                        print('{0} {1} {2} is full. Will re-try in 10 seconds.'.format(course_name.upper(), course_number.upper(), class_nbr))
 
-                # sleep prevents server from blocking the connection due to too many requests in a short period of time
-                time.sleep(5)
+
 def main():
 
     timetable_url = get_academic_timetable_url_input()
     courses_list = get_courses_list_input()
     chrome_path = get_chrome_path()
 
-    course_scraper = initialize_scraper(chrome_path, timetable_url)
+    course_scraper = CourseScraper(chrome_path, timetable_url)
+    course_scraper.get_timetable_page()
 
     while True:
 

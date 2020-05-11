@@ -89,7 +89,7 @@ def get_courses_list_input() -> list:
         print(e)
 
 
-def initialize_scraper(timetable_url) -> CourseScraper:
+def get_chrome_path() -> str:
 
 
     while True:
@@ -117,6 +117,10 @@ def initialize_scraper(timetable_url) -> CourseScraper:
         elif chrome_version == '3':
             chrome_path = os.path.join(my_path, "chromedriver_mac_83.0.4103.39")
 
+        return chrome_path
+
+
+def initialize_scraper(chrome_path, timetable_url):
 
         # Initialize scraper object with the timetable_url
         course_scraper = CourseScraper(chrome_path, timetable_url)
@@ -125,7 +129,7 @@ def initialize_scraper(timetable_url) -> CourseScraper:
 
 def courses_exist(courses_list: list, course_scraper: CourseScraper) -> bool:
 
-    try:
+    # try:
 
         while True:
 
@@ -154,12 +158,12 @@ def courses_exist(courses_list: list, course_scraper: CourseScraper) -> bool:
                 for index, bool in enumerate(course_sections_exists):
                     if bool == False:
                         print('ERROR: {0} NOT FOUND. Make sure you have spelled the course name, course code, and class nbr correctly and you have selected the right timetable.\n'.format(
-                                courses_list[index].strip().upper()))
+                                courses_list[index].upper().strip()))
 
                 return False
 
-    except Exception as e:
-        print(e)
+    # except Exception as e:
+    #     print(e)
 
 
 def alert_if_not_full(courses_list: list, course_scraper: CourseScraper):
@@ -216,8 +220,9 @@ def main():
 
     timetable_url = get_academic_timetable_url_input()
     courses_list = get_courses_list_input()
+    chrome_path = get_chrome_path()
 
-    course_scraper = initialize_scraper(timetable_url)
+    course_scraper = initialize_scraper(chrome_path, timetable_url)
 
     while True:
 

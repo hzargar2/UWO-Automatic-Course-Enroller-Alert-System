@@ -5,6 +5,8 @@ pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
+## dont forget to add support for linux and windoww chrome drivers, get python to detect the OS for this and download appropriate drivers.
+
 def get_academic_timetable_url_input() -> str:
 
     # Gets input from user for which timetable they want to use. Loops until 1 or 2 is selected as they are the
@@ -111,7 +113,6 @@ def initialize_scraper(timetable_url) -> CourseScraper:
 
         elif chrome_version == '2':
             chrome_path = os.path.join(my_path, "chromedriver_mac_81.0.4044.138")
-            print(chrome_path)
 
         elif chrome_version == '3':
             chrome_path = os.path.join(my_path, "chromedriver_mac_83.0.4103.39")

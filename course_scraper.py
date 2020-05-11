@@ -1,7 +1,5 @@
 from bs4 import BeautifulSoup
-import requests
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 import pandas as pd
 
 class CourseScraper:

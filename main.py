@@ -183,7 +183,7 @@ def alert_if_not_full(courses_list: list, course_scraper: CourseScraper):
                 all_course_sections_df = course_scraper.get_all_course_sections_df()
 
                 # assigns index to each element in list for easier reference later on
-                for index, row in all_course_sections_df.iterrows():
+                for i, row in all_course_sections_df.iterrows():
 
                     #if ldcture component of course is not full it alerts the user
                     if row['class_nbr'] == class_nbr and row['course_status'] == 'Not Full':
@@ -234,7 +234,6 @@ def main():
             break
         else:
             courses_list = get_courses_list_input()
-
 
 
 if __name__ == '__main__':

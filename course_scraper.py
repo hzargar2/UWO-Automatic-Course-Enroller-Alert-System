@@ -23,11 +23,6 @@ class CourseScraper:
 
         try:
 
-            # Initializes empty dataframe on each method call if dataframe is not empty
-
-            if not self.all_course_sections_df.empty:
-                self.all_course_sections_df = pd.DataFrame()
-
             # Course number field in search section is filled
 
             self.browser.find_element_by_id("inputCatalognbr").clear()
@@ -62,61 +57,12 @@ class CourseScraper:
                     course_sections = course_sections_table.find_all('tr')[::2]
 
                     # Different df structure depending on if its the summer timetable or the fall/winter timetable
-
                     if self.timetable_url == config.urls_dict['Fall/Winter']:
-
-                        self.all_course_sections_df = pd.DataFrame(
-                            columns=['course_section_number', 'course_component', 'class_nbr', 'course_start_time',
-                                     'course_end_time', 'course_location', 'instructor_name', 'course_notes',
-                                     'course_status', 'course_campus'])
-
-                        # Iterates over every course section in all the course sections available
-                        for index, course_section in enumerate(course_sections):
-
-                            course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
-                            instructor_name, course_notes, course_status, course_campus = self.__get_attributes_for_fall_winter_course_section(course_section)
-
-                            self.all_course_sections_df = self.all_course_sections_df.append(
-                                {'course_section_number': course_section_number,
-                                 'course_component': course_component,
-                                 'class_nbr': class_nbr,
-                                 'course_start_time': course_start_time,
-                                 'course_end_time': course_end_time,
-                                 'course_location': course_location,
-                                 'instructor_name': instructor_name,
-                                 'course_notes': course_notes,
-                                 'course_status': course_status,
-                                 'course_campus': course_campus
-                                 }, ignore_index=True)
+                        self.__add_fall_winter_course_sections_to_df(course_sections)
 
                     # Different df structure depending on if its the summer timetable or the fall/winter timetable
-
                     elif self.timetable_url == config.urls_dict['Summer']:
-
-                        self.all_course_sections_df = pd.DataFrame(
-                            columns=['course_section_number', 'course_component', 'class_nbr', 'instructor_name',
-                                     'course_notes', 'course_status', 'course_session', 'course_start_date',
-                                     'course_end_date', 'course_campus'])
-
-                        # Iterates over every course section in all the course sections available
-                        for index, course_section in enumerate(course_sections):
-
-                            course_section_number, course_component, class_nbr, course_location, instructor_name, course_notes, \
-                            course_status, course_session, course_start_date, course_end_date, course_campus = self.__get_atttibutes_for_summer_course_section(course_section)
-
-                            self.all_course_sections_df = self.all_course_sections_df.append(
-                                {'course_section_number': course_section_number,
-                                 'course_component': course_component,
-                                 'class_nbr': class_nbr,
-                                 'course_location': course_location,
-                                 'instructor_name': instructor_name,
-                                 'course_notes': course_notes,
-                                 'course_status': course_status,
-                                 'course_session': course_session,
-                                 'course_start_date': course_start_date,
-                                 'course_end_date': course_end_date,
-                                 'course_campus': course_campus
-                                 }, ignore_index=True)
+                        self.__add_summer_course_sections_to_df(course_sections)
 
         except Exception as e:
             print(e)
@@ -165,6 +111,85 @@ class CourseScraper:
 
             return course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
                    instructor_name, course_notes, course_status, course_campus
+
+        except Exception as e:
+            print(e)
+
+    def __add_fall_winter_course_sections_to_df(self, course_sections):
+
+        '''Initializes df with the coorrect coloumns for the timetable since summer and fall/winter timetable structure
+        is different and adds all the course sections to the self.all_course_sections_df pandas Dataframe object'''
+
+        try:
+
+            # Initializes empty dataframe on each method call if dataframe is not empty
+
+            if not self.all_course_sections_df.empty:
+                self.all_course_sections_df = pd.DataFrame()
+
+            self.all_course_sections_df = pd.DataFrame(
+                columns=['course_section_number', 'course_component', 'class_nbr', 'course_start_time',
+                         'course_end_time', 'course_location', 'instructor_name', 'course_notes',
+                         'course_status', 'course_campus'])
+
+            # Iterates over every course section in all the course sections available
+            for index, course_section in enumerate(course_sections):
+                course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
+                instructor_name, course_notes, course_status, course_campus = self.__get_attributes_for_fall_winter_course_section(
+                    course_section)
+
+                self.all_course_sections_df = self.all_course_sections_df.append(
+                    {'course_section_number': course_section_number,
+                     'course_component': course_component,
+                     'class_nbr': class_nbr,
+                     'course_start_time': course_start_time,
+                     'course_end_time': course_end_time,
+                     'course_location': course_location,
+                     'instructor_name': instructor_name,
+                     'course_notes': course_notes,
+                     'course_status': course_status,
+                     'course_campus': course_campus
+                     }, ignore_index=True)
+
+        except Exception as e:
+            print(e)
+
+    def __add_summer_course_sections_to_df(self, course_sections):
+
+        '''Initializes df with the coorrect coloumns for the timetable since summer and fall/winter timetable structure
+        is different and adds all the course sections to the self.all_course_sections_df pandas Dataframe object'''
+
+        try:
+
+
+            # Initializes empty dataframe on each method call if dataframe is not empty so the df is fresh for each course
+            if not self.all_course_sections_df.empty:
+                self.all_course_sections_df = pd.DataFrame()
+
+            self.all_course_sections_df = pd.DataFrame(
+                columns=['course_section_number', 'course_component', 'class_nbr', 'instructor_name',
+                         'course_notes', 'course_status', 'course_session', 'course_start_date',
+                         'course_end_date', 'course_campus'])
+
+            # Iterates over every course section in all the course sections available
+            for index, course_section in enumerate(course_sections):
+                course_section_number, course_component, class_nbr, course_location, instructor_name, course_notes, \
+                course_status, course_session, course_start_date, course_end_date, course_campus = self.__get_atttibutes_for_summer_course_section(
+                    course_section)
+
+                self.all_course_sections_df = self.all_course_sections_df.append(
+                    {'course_section_number': course_section_number,
+                     'course_component': course_component,
+                     'class_nbr': class_nbr,
+                     'course_location': course_location,
+                     'instructor_name': instructor_name,
+                     'course_notes': course_notes,
+                     'course_status': course_status,
+                     'course_session': course_session,
+                     'course_start_date': course_start_date,
+                     'course_end_date': course_end_date,
+                     'course_campus': course_campus
+                     }, ignore_index=True)
 
         except Exception as e:
             print(e)
@@ -234,8 +259,9 @@ class CourseScraper:
 
                 if url == self.browser.current_url:
                     # switch back to original window before returning
+                    found_window_handle = self.browser.current_window_handle
                     self.browser.switch_to.window(starting_window_handle)
-                    return self.browser.current_window_handle
+                    return found_window_handle
 
             self.browser.switch_to.window(starting_window_handle)
 

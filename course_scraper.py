@@ -10,18 +10,17 @@ class CourseScraper:
     def __init__(self, chromedriverpath, timetable_url):
 
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("disable-gpu")
+        # chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("disable-gpu")
 
         self.browser = webdriver.Chrome(chromedriverpath, options=chrome_options)
         self.timetable_url = timetable_url
+        self.browser.get(self.timetable_url)
+
         self.all_course_sections_df = pd.DataFrame(
             columns=['course_section_number', 'course_component', 'class_nbr', 'instructor_name',
                      'course_notes', 'course_status', 'course_session', 'course_start_date', 'course_end_date',
                      'course_campus'])
-
-    def get_timetable_page(self):
-        self.browser.get(self.timetable_url)
 
     def set_all_course_sections_df(self, course_name: str, course_number: str):
 
@@ -100,7 +99,7 @@ class CourseScraper:
 
         return self.all_course_sections_df
 
-    def get_all_course_sections_with_specific_component_df(self, component: str) -> pd.DataFrame:
+    def get_all_course_sections_with_specific_course_component_df(self, component: str) -> pd.DataFrame:
 
         '''Valid component inputs are 'LEC', 'TUT', 'LAB'''
 
@@ -112,12 +111,13 @@ class CourseScraper:
         except Exception as e:
             print(e)
 
+
     def get_all_course_sections_not_full_df(self) -> pd.DataFrame:
 
         try:
 
-            all_course_sections_not_full_df = self.all_course_sections_df.loc[self.all_course_sections_df['course_status'] == 'Not Full']
-            return all_course_sections_not_full_df
+            df = self.all_course_sections_df.loc[self.all_course_sections_df['course_status'] == 'Not Full']
+            return df
 
         except Exception as e:
             print(e)
@@ -131,8 +131,27 @@ class CourseScraper:
                 for index, row in self.all_course_sections_df.iterrows():
                     if row['class_nbr'] == class_nbr:
                         return True
+            else:
+                return False
 
-            return False
+        except Exception as e:
+            print(e)
+
+    def course_section_is_distance_studies(self, class_nbr: str) -> bool:
+
+        try:
+            if self.course_section_exists(class_nbr):
+
+                # Iterates over every course section in all the course sections available
+                for index, row in self.all_course_sections_df.iterrows():
+                    if row['class_nbr'] == class_nbr and row['course_session'] == 'Distance Studies':
+                        return True
+
+                    elif row['class_nbr'] == class_nbr and row['course_session'] != 'Distance Studies':
+                        return False
+
+            else:
+                return False
 
         except Exception as e:
             print(e)

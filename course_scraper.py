@@ -10,8 +10,8 @@ class CourseScraper:
     def __init__(self, chromedriverpath, timetable_url):
 
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")
-        # chrome_options.add_argument("disable-gpu")
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("disable-gpu")
 
         self.browser = webdriver.Chrome(chromedriverpath, options=chrome_options)
         self.timetable_url = timetable_url

@@ -222,8 +222,8 @@ def alert_if_not_full(courses_list: list, course_scraper: CourseScraper):
 def main():
 
     timetable_url = get_academic_timetable_url_input()
-    courses_list = get_courses_list_input()
     chrome_path = get_chrome_path()
+    courses_list = get_courses_list_input()
 
     course_scraper = CourseScraper(chrome_path, timetable_url)
 

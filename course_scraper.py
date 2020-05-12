@@ -74,7 +74,7 @@ class CourseScraper:
                         for index, course_section in enumerate(course_sections):
 
                             course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
-                            instructor_name, course_notes, course_status, course_campus = self.__get_fall_winter_course_section_attributes(course_section)
+                            instructor_name, course_notes, course_status, course_campus = self.__get_attributes_for_fall_winter_course_section(course_section)
 
                             self.all_course_sections_df = self.all_course_sections_df.append(
                                 {'course_section_number': course_section_number,
@@ -102,7 +102,7 @@ class CourseScraper:
                         for index, course_section in enumerate(course_sections):
 
                             course_section_number, course_component, class_nbr, course_location, instructor_name, course_notes, \
-                            course_status, course_session, course_start_date, course_end_date, course_campus = self.__get_summer_course_section_attributes(course_section)
+                            course_status, course_session, course_start_date, course_end_date, course_campus = self.__get_atttibutes_for_summer_course_section(course_section)
 
                             self.all_course_sections_df = self.all_course_sections_df.append(
                                 {'course_section_number': course_section_number,
@@ -121,38 +121,53 @@ class CourseScraper:
         except Exception as e:
             print(e)
 
-    def __get_summer_course_section_attributes(self, course_section):
+    def __get_atttibutes_for_summer_course_section(self, course_section):
 
-        course_section_number = course_section.find_all('td')[0].text.strip()
-        course_component = course_section.find_all('td')[1].text.strip()
-        class_nbr = course_section.find_all('td')[2].text.strip()
-        course_location = course_section.find_all('td')[11].text.strip()
-        instructor_name = course_section.find_all('td')[12].text.strip()
-        course_notes = course_section.find_all('td')[13].text.strip()
-        course_status = course_section.find_all('td')[14].text.strip()
-        course_session = course_section.find_all('td')[15].text.strip()
-        course_start_date = course_section.find_all('td')[16].text.strip()
-        course_end_date = course_section.find_all('td')[17].text.strip()
-        course_campus = course_section.find_all('td')[18].text.strip()
+        '''Summer and fall/winter timetable have a different table structure and as a result, a different number
+        of course section attributes. Therefore, there are different indices for certain values'''
 
-        return course_section_number, course_component, class_nbr, course_location, instructor_name, course_notes, \
-               course_status, course_session, course_start_date, course_end_date, course_campus
+        try:
 
-    def __get_fall_winter_course_section_attributes(self, course_section):
+            course_section_number = course_section.find_all('td')[0].text.strip()
+            course_component = course_section.find_all('td')[1].text.strip()
+            class_nbr = course_section.find_all('td')[2].text.strip()
+            course_location = course_section.find_all('td')[11].text.strip()
+            instructor_name = course_section.find_all('td')[12].text.strip()
+            course_notes = course_section.find_all('td')[13].text.strip()
+            course_status = course_section.find_all('td')[14].text.strip()
+            course_session = course_section.find_all('td')[15].text.strip()
+            course_start_date = course_section.find_all('td')[16].text.strip()
+            course_end_date = course_section.find_all('td')[17].text.strip()
+            course_campus = course_section.find_all('td')[18].text.strip()
 
-        course_section_number = course_section.find_all('td')[0].text.strip()
-        course_component = course_section.find_all('td')[1].text.strip()
-        class_nbr = course_section.find_all('td')[2].text.strip()
-        course_start_time = course_section.find_all('td')[9].text.strip()
-        course_end_time = course_section.find_all('td')[10].text.strip()
-        course_location = course_section.find_all('td')[11].text.strip()
-        instructor_name = course_section.find_all('td')[12].text.strip()
-        course_notes = course_section.find_all('td')[13].text.strip()
-        course_status = course_section.find_all('td')[14].text.strip()
-        course_campus = course_section.find_all('td')[15].text.strip()
+            return course_section_number, course_component, class_nbr, course_location, instructor_name, course_notes, \
+                   course_status, course_session, course_start_date, course_end_date, course_campus
 
-        return course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
-               instructor_name, course_notes, course_status, course_campus
+        except Exception as e:
+            print(e)
+
+    def __get_attributes_for_fall_winter_course_section(self, course_section):
+
+        '''Summer and fall/winter timetable have a different table structure and as a result, a different number
+        of course section attributes. Therefore, there are different indices for certain values'''
+
+        try:
+            course_section_number = course_section.find_all('td')[0].text.strip()
+            course_component = course_section.find_all('td')[1].text.strip()
+            class_nbr = course_section.find_all('td')[2].text.strip()
+            course_start_time = course_section.find_all('td')[9].text.strip()
+            course_end_time = course_section.find_all('td')[10].text.strip()
+            course_location = course_section.find_all('td')[11].text.strip()
+            instructor_name = course_section.find_all('td')[12].text.strip()
+            course_notes = course_section.find_all('td')[13].text.strip()
+            course_status = course_section.find_all('td')[14].text.strip()
+            course_campus = course_section.find_all('td')[15].text.strip()
+
+            return course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
+                   instructor_name, course_notes, course_status, course_campus
+
+        except Exception as e:
+            print(e)
 
     def get_all_course_sections_df(self) -> pd.DataFrame:
 

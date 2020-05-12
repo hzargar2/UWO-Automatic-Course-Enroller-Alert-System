@@ -155,8 +155,8 @@ def courses_exist(courses_list: list, course_scraper: CourseScraper) -> bool:
             else:
                 for index, bool in enumerate(course_sections_exists):
                     if bool == False:
-                        print('ERROR: {0} NOT FOUND IN TIMETABLE. Make sure you have spelled the course name, course code, and class nbr correctly and you have selected the right timetable.\n'.format(
-                                courses_list[index].upper().strip()))
+                        print('ERROR: {0} {1} {2} NOT FOUND IN TIMETABLE. Make sure you have spelled the course name, course code, and class nbr correctly and you have selected the right timetable.\n'.format(
+                                courses_list[index][0].upper().strip(), courses_list[index][1].upper().strip(), courses_list[index][2].upper().strip()))
                 return False
 
     except Exception as e:
@@ -226,7 +226,6 @@ def main():
     chrome_path = get_chrome_path()
 
     course_scraper = CourseScraper(chrome_path, timetable_url)
-    course_scraper.get_timetable_page()
 
     while True:
 

@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import pandas as pd
-import time
+import time, os, config
 
 
 class CourseScraper:
@@ -17,10 +17,7 @@ class CourseScraper:
         self.timetable_url = timetable_url
         self.browser.get(self.timetable_url)
 
-        self.all_course_sections_df = pd.DataFrame(
-            columns=['course_section_number', 'course_component', 'class_nbr', 'instructor_name',
-                     'course_notes', 'course_status', 'course_session', 'course_start_date', 'course_end_date',
-                     'course_campus'])
+        self.all_course_sections_df = pd.DataFrame()
 
     def set_all_course_sections_df(self, course_name: str, course_number: str):
 
@@ -29,10 +26,7 @@ class CourseScraper:
             # Initializes empty dataframe on each method call if dataframe is not empty
 
             if not self.all_course_sections_df.empty:
-                self.all_course_sections_df = pd.DataFrame(
-                    columns=['course_section_number', 'course_component', 'class_nbr', 'instructor_name',
-                             'course_notes', 'course_status', 'course_session', 'course_start_date', 'course_end_date',
-                             'course_campus'])
+                self.all_course_sections_df = pd.DataFrame()
 
             # Course number field in search section is filled
 
@@ -40,7 +34,7 @@ class CourseScraper:
             course_number_field = self.browser.find_element_by_id("inputCatalognbr")
             course_number_field.send_keys(course_number)
 
-            self.browser.find_element_by_xpath("/html/body/div/div/div[2]/form/fieldset/div[5]/div/button[2]").click()
+            self.browser.find_element_by_xpath("//*[text()[contains(., 'Submit')]]").click()
 
             # gets page html
 
@@ -58,7 +52,8 @@ class CourseScraper:
                 # if user inputted course name and course number is in the h4 tag, it gets the appropriate table for
                 # that course
 
-                if course_name.lower() == course.text.split(' ')[0].lower() and course_number.lower() == course.text.split(' ')[1].lower():
+                if course_name.lower() == course.text.split(' ')[0].lower() and course_number.lower() == \
+                        course.text.split(' ')[1].lower():
                     course_sections_table = courses_in_search[index].find_next('tbody')
 
                     # Gets all tr tags in the table (course slots), then slices and gets every other because every other
@@ -66,36 +61,100 @@ class CourseScraper:
 
                     course_sections = course_sections_table.find_all('tr')[::2]
 
-                    # Iterates over every course section in all the course sections available
+                    # Different df structure depending on if its the summer timetable or the fall/winter timetable
 
-                    for index, course_section in enumerate(course_sections):
-                        course_section_number = course_section.find_all('td')[0].text.strip()
-                        course_component = course_section.find_all('td')[1].text.strip()
-                        class_nbr = course_section.find_all('td')[2].text.strip()
-                        instructor_name = course_section.find_all('td')[12].text.strip()
-                        course_notes = course_section.find_all('td')[13].text.strip()
-                        course_status = course_section.find_all('td')[14].text.strip()
-                        course_session = course_section.find_all('td')[15].text.strip()
-                        course_start_date = course_section.find_all('td')[16].text.strip()
-                        course_end_date = course_section.find_all('td')[17].text.strip()
-                        course_campus = course_section.find_all('td')[18].text.strip()
+                    if self.timetable_url == config.urls_dict['Fall/Winter']:
 
-                        self.all_course_sections_df = self.all_course_sections_df.append({'course_section_number': course_section_number,
-                                        'course_component': course_component,
-                                        'class_nbr': class_nbr,
-                                        'instructor_name': instructor_name,
-                                        'course_notes': course_notes,
-                                        'course_status': course_status,
-                                        'course_session': course_session,
-                                        'course_start_date': course_start_date,
-                                        'course_end_date': course_end_date,
-                                        'course_campus': course_campus
-                                        }, ignore_index=True)
+                        self.all_course_sections_df = pd.DataFrame(
+                            columns=['course_section_number', 'course_component', 'class_nbr', 'course_start_time',
+                                     'course_end_time', 'course_location', 'instructor_name', 'course_notes',
+                                     'course_status', 'course_campus'])
+
+                        # Iterates over every course section in all the course sections available
+                        for index, course_section in enumerate(course_sections):
+
+                            course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
+                            instructor_name, course_notes, course_status, course_campus = self.__get_fall_winter_course_section_attributes(course_section)
+
+                            self.all_course_sections_df = self.all_course_sections_df.append(
+                                {'course_section_number': course_section_number,
+                                 'course_component': course_component,
+                                 'class_nbr': class_nbr,
+                                 'course_start_time': course_start_time,
+                                 'course_end_time': course_end_time,
+                                 'course_location': course_location,
+                                 'instructor_name': instructor_name,
+                                 'course_notes': course_notes,
+                                 'course_status': course_status,
+                                 'course_campus': course_campus
+                                 }, ignore_index=True)
+
+                    # Different df structure depending on if its the summer timetable or the fall/winter timetable
+
+                    elif self.timetable_url == config.urls_dict['Summer']:
+
+                        self.all_course_sections_df = pd.DataFrame(
+                            columns=['course_section_number', 'course_component', 'class_nbr', 'instructor_name',
+                                     'course_notes', 'course_status', 'course_session', 'course_start_date',
+                                     'course_end_date', 'course_campus'])
+
+                        # Iterates over every course section in all the course sections available
+                        for index, course_section in enumerate(course_sections):
+
+                            course_section_number, course_component, class_nbr, course_location, instructor_name, course_notes, \
+                            course_status, course_session, course_start_date, course_end_date, course_campus = self.__get_summer_course_section_attributes(course_section)
+
+                            self.all_course_sections_df = self.all_course_sections_df.append(
+                                {'course_section_number': course_section_number,
+                                 'course_component': course_component,
+                                 'class_nbr': class_nbr,
+                                 'course_location': course_location,
+                                 'instructor_name': instructor_name,
+                                 'course_notes': course_notes,
+                                 'course_status': course_status,
+                                 'course_session': course_session,
+                                 'course_start_date': course_start_date,
+                                 'course_end_date': course_end_date,
+                                 'course_campus': course_campus
+                                 }, ignore_index=True)
 
         except Exception as e:
-                print(e)
+            print(e)
 
-    def get_all_course_sections_df(self):
+    def __get_summer_course_section_attributes(self, course_section):
+
+        course_section_number = course_section.find_all('td')[0].text.strip()
+        course_component = course_section.find_all('td')[1].text.strip()
+        class_nbr = course_section.find_all('td')[2].text.strip()
+        course_location = course_section.find_all('td')[11].text.strip()
+        instructor_name = course_section.find_all('td')[12].text.strip()
+        course_notes = course_section.find_all('td')[13].text.strip()
+        course_status = course_section.find_all('td')[14].text.strip()
+        course_session = course_section.find_all('td')[15].text.strip()
+        course_start_date = course_section.find_all('td')[16].text.strip()
+        course_end_date = course_section.find_all('td')[17].text.strip()
+        course_campus = course_section.find_all('td')[18].text.strip()
+
+        return course_section_number, course_component, class_nbr, course_location, instructor_name, course_notes, \
+               course_status, course_session, course_start_date, course_end_date, course_campus
+
+    def __get_fall_winter_course_section_attributes(self, course_section):
+
+        course_section_number = course_section.find_all('td')[0].text.strip()
+        course_component = course_section.find_all('td')[1].text.strip()
+        class_nbr = course_section.find_all('td')[2].text.strip()
+        course_start_time = course_section.find_all('td')[9].text.strip()
+        course_end_time = course_section.find_all('td')[10].text.strip()
+        course_location = course_section.find_all('td')[11].text.strip()
+        instructor_name = course_section.find_all('td')[12].text.strip()
+        course_notes = course_section.find_all('td')[13].text.strip()
+        course_status = course_section.find_all('td')[14].text.strip()
+        course_campus = course_section.find_all('td')[15].text.strip()
+
+        return course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
+               instructor_name, course_notes, course_status, course_campus
+
+    def get_all_course_sections_df(self) -> pd.DataFrame:
 
         return self.all_course_sections_df
 
@@ -111,7 +170,6 @@ class CourseScraper:
         except Exception as e:
             print(e)
 
-
     def get_all_course_sections_not_full_df(self) -> pd.DataFrame:
 
         try:
@@ -125,14 +183,12 @@ class CourseScraper:
     def course_section_exists(self, class_nbr: str) -> bool:
 
         try:
-            if not self.all_course_sections_df.empty:
-
-                # Iterates over every course section in all the course sections available
-                for index, row in self.all_course_sections_df.iterrows():
-                    if row['class_nbr'] == class_nbr:
-                        return True
-            else:
-                return False
+            # Iterates over every course section in all the course sections available
+            for index, row in self.all_course_sections_df.iterrows():
+                if row['class_nbr'] == class_nbr:
+                    return True
+            # course section doesn't exist in current df
+            return False
 
         except Exception as e:
             print(e)
@@ -140,23 +196,37 @@ class CourseScraper:
     def course_section_is_distance_studies(self, class_nbr: str) -> bool:
 
         try:
-            if self.course_section_exists(class_nbr):
+            # Iterates over every course section in all the course sections available
+            for index, row in self.all_course_sections_df.iterrows():
+                if row['class_nbr'] == class_nbr and row['course_session'] == 'Distance Studies':
+                    return True
 
-                # Iterates over every course section in all the course sections available
-                for index, row in self.all_course_sections_df.iterrows():
-                    if row['class_nbr'] == class_nbr and row['course_session'] == 'Distance Studies':
-                        return True
-
-                    elif row['class_nbr'] == class_nbr and row['course_session'] != 'Distance Studies':
-                        return False
-
-            else:
-                return False
+                elif row['class_nbr'] == class_nbr and row['course_session'] != 'Distance Studies':
+                    return False
 
         except Exception as e:
             print(e)
 
+    def get_window_handle_with_url(self, url: str):
 
+        try:
+            # stores current window handle to reference starting window handle
+            starting_window_handle = self.browser.current_window_handle
 
+            # loops through all windows to see if any of the urls match the window url
+            for window_handle in self.browser.window_handles:
+                self.browser.switch_to.window(window_handle)
 
+                if url == self.browser.current_url:
+                    # switch back to original window before returning
+                    self.browser.switch_to.window(starting_window_handle)
+                    return self.browser.current_window_handle
 
+            self.browser.switch_to.window(starting_window_handle)
+
+        except Exception as e:
+            print(e)
+
+# scraper = CourseScraper(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'])
+#
+# print(scraper.window_handle_exists(config.urls_dict['Summer']))

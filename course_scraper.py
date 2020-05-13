@@ -23,6 +23,12 @@ class CourseScraper:
 
         try:
 
+            # Initializes empty dataframe on each method call if dataframe is not empty to make sure each
+            # course gets a fresh empty df
+
+            if not self.all_course_sections_df.empty:
+                self.all_course_sections_df = pd.DataFrame()
+
             # Course number field in search section is filled
 
             self.browser.find_element_by_id("inputCatalognbr").clear()
@@ -122,11 +128,6 @@ class CourseScraper:
 
         try:
 
-            # Initializes empty dataframe on each method call if dataframe is not empty
-
-            if not self.all_course_sections_df.empty:
-                self.all_course_sections_df = pd.DataFrame()
-
             self.all_course_sections_df = pd.DataFrame(
                 columns=['course_section_number', 'course_component', 'class_nbr', 'course_start_time',
                          'course_end_time', 'course_location', 'instructor_name', 'course_notes',
@@ -160,11 +161,6 @@ class CourseScraper:
         is different and adds all the course sections to the self.all_course_sections_df pandas Dataframe object'''
 
         try:
-
-
-            # Initializes empty dataframe on each method call if dataframe is not empty so the df is fresh for each course
-            if not self.all_course_sections_df.empty:
-                self.all_course_sections_df = pd.DataFrame()
 
             self.all_course_sections_df = pd.DataFrame(
                 columns=['course_section_number', 'course_component', 'class_nbr', 'instructor_name',

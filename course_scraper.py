@@ -10,12 +10,11 @@ class CourseScraper:
     def __init__(self, chromedriverpath, timetable_url):
 
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("disable-gpu")
+        # chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("disable-gpu")
 
         self.browser = webdriver.Chrome(chromedriverpath, options=chrome_options)
         self.timetable_url = timetable_url
-        self.browser.get(self.timetable_url)
 
         self.all_course_sections_df = pd.DataFrame()
 
@@ -28,6 +27,10 @@ class CourseScraper:
 
             if not self.all_course_sections_df.empty:
                 self.all_course_sections_df = pd.DataFrame()
+
+            # switch to the timetable window. Otherwise, makes a new window if it doesn't exist
+            self.switch_to_window_handle_with_url(self.timetable_url)
+
 
             # Course number field in search section is filled
 
@@ -243,26 +246,30 @@ class CourseScraper:
         except Exception as e:
             print(e)
 
-    def get_window_handle_with_url(self, url: str):
+    def switch_to_window_handle_with_url(self, url: str):
 
         try:
-            # stores current window handle to reference starting window handle
-            starting_window_handle = self.browser.current_window_handle
+            # loops through all windows to see if any of the window urls match the url, if true, then method returns
+            # because it has already switched to it prior to doing the check so we don't need to do anything else
 
-            # loops through all windows to see if any of the urls match the window url
             for window_handle in self.browser.window_handles:
+
                 self.browser.switch_to.window(window_handle)
 
                 if url == self.browser.current_url:
-                    # switch back to original window before returning
-                    found_window_handle = self.browser.current_window_handle
-                    self.browser.switch_to.window(starting_window_handle)
-                    return found_window_handle
+                    return
 
-            self.browser.switch_to.window(starting_window_handle)
+            # if not, the iterator above has stopped at the last window and has switched to it. Therefore, when we open
+            # a new window with our desired url, it opens to the right of the last window. Therefore, this new window
+            # now becomes the new last window in the window handles list since it is the most rightward window.
+            # We can easily swith to this lat window with the -1 index.
+
+            self.browser.execute_script("window.open('{0}')".format(url))
+            self.browser.switch_to.window(self.browser.window_handles[-1])
 
         except Exception as e:
             print(e)
+
 
 # scraper = CourseScraper(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'])
 #

@@ -10,8 +10,8 @@ class CourseScraper:
     def __init__(self, chromedriverpath, timetable_url):
 
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")
-        # chrome_options.add_argument("disable-gpu")
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("disable-gpu")
 
         self.browser = webdriver.Chrome(chromedriverpath, options=chrome_options)
         self.timetable_url = timetable_url
@@ -72,6 +72,7 @@ class CourseScraper:
                     # Different df structure depending on if its the summer timetable or the fall/winter timetable
                     elif self.timetable_url == config.urls_dict['Summer']:
                         self.__add_summer_course_sections_to_df(course_sections)
+
 
         except Exception as e:
             print(e)
@@ -262,7 +263,7 @@ class CourseScraper:
             # if not, the iterator above has stopped at the last window and has switched to it. Therefore, when we open
             # a new window with our desired url, it opens to the right of the last window. Therefore, this new window
             # now becomes the new last window in the window handles list since it is the most rightward window.
-            # We can easily swith to this lat window with the -1 index.
+            # We can easily switch to this lat window with the -1 index.
 
             self.browser.execute_script("window.open('{0}')".format(url))
             self.browser.switch_to.window(self.browser.window_handles[-1])

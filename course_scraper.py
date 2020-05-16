@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import pandas as pd
-import time, os, config
+import time, os, config, inspect, traceback
 
 
 class CourseScraper:
@@ -73,9 +73,10 @@ class CourseScraper:
                     elif self.timetable_url == config.urls_dict['Summer']:
                         self.__add_summer_course_sections_to_df(course_sections)
 
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
-        except Exception as e:
-            print(e)
 
     def __get_atttibutes_for_summer_course_section(self, course_section):
 
@@ -99,8 +100,9 @@ class CourseScraper:
             return course_section_number, course_component, class_nbr, course_location, instructor_name, course_notes, \
                    course_status, course_session, course_start_date, course_end_date, course_campus
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def __get_attributes_for_fall_winter_course_section(self, course_section):
 
@@ -122,8 +124,9 @@ class CourseScraper:
             return course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
                    instructor_name, course_notes, course_status, course_campus
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def __add_fall_winter_course_sections_to_df(self, course_sections):
 
@@ -156,8 +159,9 @@ class CourseScraper:
                      'course_campus': course_campus
                      }, ignore_index=True)
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def __add_summer_course_sections_to_df(self, course_sections):
 
@@ -191,8 +195,9 @@ class CourseScraper:
                      'course_campus': course_campus
                      }, ignore_index=True)
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def get_all_course_sections_df(self) -> pd.DataFrame:
 
@@ -207,8 +212,9 @@ class CourseScraper:
             df = self.all_course_sections_df.loc[self.all_course_sections_df['course_component'] == component]
             return df
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def get_course_component_for_course_section(self, class_nbr) -> str:
         try:
@@ -217,9 +223,9 @@ class CourseScraper:
                 if row['class_nbr'] == class_nbr:
                     return row['course_component']
 
-        except Exception as e:
-            print(e)
-
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def get_all_course_sections_not_full_df(self) -> pd.DataFrame:
 
@@ -228,8 +234,9 @@ class CourseScraper:
             df = self.all_course_sections_df.loc[self.all_course_sections_df['course_status'] == 'Not Full']
             return df
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def course_section_is_not_full(self, class_nbr: str) -> bool:
 
@@ -242,9 +249,9 @@ class CourseScraper:
                 elif row['class_nbr'] == class_nbr and row['course_status'] == 'Full':
                     return False
 
-        except Exception as e:
-            print(e)
-
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def course_section_exists(self, class_nbr: str) -> bool:
 
@@ -256,8 +263,9 @@ class CourseScraper:
             # course section doesn't exist in current df
             return False
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def course_section_is_distance_studies(self, class_nbr: str) -> bool:
 
@@ -270,8 +278,9 @@ class CourseScraper:
                 elif row['class_nbr'] == class_nbr and row['course_session'] != 'Distance Studies':
                     return False
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def switch_to_window_handle_with_url(self, url: str):
 
@@ -294,8 +303,9 @@ class CourseScraper:
             self.browser.execute_script("window.open('{0}')".format(url))
             self.browser.switch_to.window(self.browser.window_handles[-1])
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
 
 # scraper = CourseScraper(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'])

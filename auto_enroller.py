@@ -22,7 +22,7 @@ class AutoEnroller(CourseScraper):
 
     def enroll(self, course_name: str, course_number: str, class_nbr: str, dependant_class_nbr_with_course_component_list_1 = None, dependant_class_nbr_with_course_component_list_2 = None):
 
-        # try:
+        try:
 
             self.set_all_course_sections_df(course_name, course_number)
 
@@ -148,10 +148,11 @@ class AutoEnroller(CourseScraper):
                 if dependant is not None:
                     print("SUCCESS: ENROLLED IN {0} {1} '{2}' CLASS NBR {3}".format(course_name, course_number, dependant[1], dependant[0]))
 
-        # except Exception as e:
-        #     print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
-    def has_dependant_course_components(self):
+    def has_dependant_course_components(self) -> bool:
 
         try:
 
@@ -160,8 +161,9 @@ class AutoEnroller(CourseScraper):
             else:
                 return False
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
     def get_dependant_course_components_df(self, class_nbr: str) -> pd.DataFrame:
 
@@ -178,8 +180,9 @@ class AutoEnroller(CourseScraper):
                 df = self.all_course_sections_df.loc[self.all_course_sections_df['course_component'] != current_course_component]
                 return df
 
-        except Exception as e:
-            print(e)
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
 
 
 '''TEST CASE'''

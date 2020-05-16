@@ -210,6 +210,17 @@ class CourseScraper:
         except Exception as e:
             print(e)
 
+    def get_course_component_for_course_section(self, class_nbr) -> str:
+        try:
+            # Iterates over every course section in all the course sections available
+            for index, row in self.all_course_sections_df.iterrows():
+                if row['class_nbr'] == class_nbr:
+                    return row['course_component']
+
+        except Exception as e:
+            print(e)
+
+
     def get_all_course_sections_not_full_df(self) -> pd.DataFrame:
 
         try:
@@ -219,6 +230,21 @@ class CourseScraper:
 
         except Exception as e:
             print(e)
+
+    def course_section_is_not_full(self, class_nbr: str) -> bool:
+
+        '''Checks if course section with class_nbr is full or not'''
+        try:
+
+            for i, row in self.all_course_sections_df.iterrows():
+                if row['class_nbr'] == class_nbr and row['course_status'] == 'Not Full':
+                    return True
+                elif row['class_nbr'] == class_nbr and row['course_status'] == 'Full':
+                    return False
+
+        except Exception as e:
+            print(e)
+
 
     def course_section_exists(self, class_nbr: str) -> bool:
 

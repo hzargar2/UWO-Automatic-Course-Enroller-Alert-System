@@ -1,5 +1,6 @@
 from course_scraper import *
 import time, config, sys, vlc, threading, select, os
+from tqdm import tqdm
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -21,7 +22,7 @@ def get_academic_timetable_url_input() -> str:
         print('')
 
         if timetable not in ['1', '2']:
-            print('Incorrect entry. Make sure you inputted the number and not the text')
+            print('ERROR: Incorrect entry. Make sure you inputted the number and not the text')
             continue
         else:
             if timetable == '1':
@@ -91,7 +92,6 @@ def get_courses_list_input() -> list:
 
 def get_chrome_path() -> str:
 
-
     while True:
 
         chrome_version = input('\nSelect the version of your Google Chrome browser. This can be found in Help -> About Google Chrome. (ENTER 1,2, or 3)\n\n'
@@ -105,7 +105,7 @@ def get_chrome_path() -> str:
         my_path = os.path.dirname(__file__)
 
         if chrome_version not in ['1', '2', '3']:
-            print('Incorrect entry. Make sure you inputted the number and not the text')
+            print('ERROR: Incorrect entry. Make sure you inputted the number and not the text')
             continue
 
         elif chrome_version == '1':
@@ -131,7 +131,7 @@ def courses_exist(courses_list: list, course_scraper: CourseScraper) -> bool:
             # empty list to store booleans of whether the course exists or not
             course_sections_exists = []
 
-            for course in courses_list:
+            for course in tqdm(courses_list):
                 course_name = course[0]
                 course_number = course[1]
                 class_nbr = course[2]

@@ -12,13 +12,15 @@ pd.set_option('display.width', 1000)
 
 class AutoEnroller(CourseScraper):
 
-    def __init__(self, chromedriverpath: str, student_center_login_url: str, timetable_url: str):
+    def __init__(self, chromedriverpath: str, timetable_url: str, student_center_login_url: str, username: str, password: str):
 
         super().__init__(chromedriverpath, timetable_url)
 
         self.student_center_login_url = student_center_login_url
+        self.username = username
+        self.password = password
 
-    def enroll(self, username: str, password: str, course_name: str, course_number: str, class_nbr: str, dependant_class_nbr_with_course_component_list_1 = None, dependant_class_nbr_with_course_component_list_2 = None):
+    def enroll(self, course_name: str, course_number: str, class_nbr: str, dependant_class_nbr_with_course_component_list_1 = None, dependant_class_nbr_with_course_component_list_2 = None):
 
         # try:
 
@@ -31,8 +33,8 @@ class AutoEnroller(CourseScraper):
             username_field = self.browser.find_element_by_id("userid")
             passsword_field = self.browser.find_element_by_id("pwd")
 
-            username_field.send_keys(username)
-            passsword_field.send_keys(password)
+            username_field.send_keys(self.username)
+            passsword_field.send_keys(self.password)
 
             # submit button for login info
             self.browser.find_element_by_xpath("//*[@value='Sign In']").click()
@@ -183,12 +185,12 @@ class AutoEnroller(CourseScraper):
 '''TEST CASE'''
 
 # scraper = CourseScraper(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'])
-auto_enroller = AutoEnroller(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Student_Center_Login_Page'], config.urls_dict['Summer'])
+auto_enroller = AutoEnroller(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'], config.urls_dict['Student_Center_Login_Page'], login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'])
 
 ### DO NOT PUSH WITH LOGIN CREDENTIALS
 # auto_enroller.enroll(login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'], 'PHYSICS', '1302A', '2063', ['2065','TUT'], ['2064','LAB'])
 
-auto_enroller.enroll(login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'], 'COMPSCI', '1027B', '1194', ['1310','LAB'])
+auto_enroller.enroll('COMPSCI', '1027B', '1194', ['1310','LAB'])
 
 
 

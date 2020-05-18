@@ -226,6 +226,17 @@ class CourseScraper:
             print('ERROR:')
             print(traceback.format_exc())
 
+    def get_course_location_for_course_section(self, class_nbr) -> str:
+        try:
+            # Iterates over every course section in all the course sections available
+            for index, row in self.all_course_sections_df.iterrows():
+                if row['class_nbr'] == class_nbr:
+                    return row['course_location']
+
+        except:
+            print('ERROR:')
+            print(traceback.format_exc())
+
     def get_course_sections_not_full_df(self) -> pd.DataFrame:
 
         try:

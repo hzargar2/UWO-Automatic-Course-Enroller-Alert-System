@@ -10,7 +10,7 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
 
-class AutoEnroller(CourseScraper):
+class AutoEnroller(AutoEnroller):
 
     def __init__(self, chromedriverpath: str, timetable_url: str, student_center_login_url: str, username: str, password: str):
 
@@ -23,8 +23,13 @@ class AutoEnroller(CourseScraper):
     def enroll(self, course_name: str, course_number: str, class_nbr: str, dependant_class_nbr_with_course_component_list_1 = None, dependant_class_nbr_with_course_component_list_2 = None):
 
         try:
-
-            self.set_all_course_sections_df(course_name, course_number)
+            # Checks to see if the course section exists in the current dataframe. Otherwise, runs set_all_current_sections_df
+            # again. Better than running the method each time which slows it down
+            if not self.course_section_exists(class_nbr):
+                print('Class_nbr not found in current all_course_sections_df attribute. Running set_all_course_sections_df method again.\n')
+                print('Try to have set_all_course_sections_df() execute only once in the code logic to reduce computation time for each course iteration (5s vs 10s).\n ')
+                self.set_all_course_sections_df(course_name, course_number)
+                time.sleep(5)
 
             # switches to student center login window
             self.switch_to_window_handle_with_url(self.student_center_login_url)
@@ -146,7 +151,7 @@ class AutoEnroller(CourseScraper):
             print("SUCCESS: ENROLLED IN {0} {1} '{2}' CLASS NBR {3}".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
             for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
                 if dependant is not None:
-                    print("SUCCESS: ENROLLED IN {0} {1} '{2}' CLASS NBR {3}".format(course_name, course_number, dependant[1], dependant[0]))
+                    print("SUCCESS: ENROLLED IN {0} {1} '{2}' CLASS NBR {3}".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0]))
 
         except:
             print('ERROR:')
@@ -187,14 +192,9 @@ class AutoEnroller(CourseScraper):
 
 '''TEST CASE'''
 
-# scraper = CourseScraper(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'])
-auto_enroller = AutoEnroller(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'], config.urls_dict['Student_Center_Login_Page'], login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'])
-
-### DO NOT PUSH WITH LOGIN CREDENTIALS
-# auto_enroller.enroll(login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'], 'PHYSICS', '1302A', '2063', ['2065','TUT'], ['2064','LAB'])
-
-auto_enroller.enroll('COMPSCI', '1027B', '1194', ['1310','LAB'])
-
-
+# auto_enroller = AutoEnroller(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'], config.urls_dict['Student_Center_Login_Page'], login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'])
+# auto_enroller.enroll('COMPSCI', '1027B', '1194', ['1310','LAB'])
+#
+#
 
 

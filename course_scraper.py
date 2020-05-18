@@ -77,7 +77,6 @@ class CourseScraper:
             print('ERROR:')
             print(traceback.format_exc())
 
-
     def __get_atttibutes_for_summer_course_section(self, course_section):
 
         '''Summer and fall/winter timetable have a different table structure and as a result, a different number
@@ -203,7 +202,7 @@ class CourseScraper:
 
         return self.all_course_sections_df
 
-    def get_all_course_sections_with_specific_course_component_df(self, component: str) -> pd.DataFrame:
+    def get_course_sections_by_component_df(self, component: str) -> pd.DataFrame:
 
         '''Valid component inputs are 'LEC', 'TUT', 'LAB'''
 
@@ -227,7 +226,7 @@ class CourseScraper:
             print('ERROR:')
             print(traceback.format_exc())
 
-    def get_all_course_sections_not_full_df(self) -> pd.DataFrame:
+    def get_course_sections_not_full_df(self) -> pd.DataFrame:
 
         try:
 
@@ -238,16 +237,16 @@ class CourseScraper:
             print('ERROR:')
             print(traceback.format_exc())
 
-    def course_section_is_not_full(self, class_nbr: str) -> bool:
+    def course_section_is_full(self, class_nbr: str) -> bool:
 
         '''Checks if course section with class_nbr is full or not'''
         try:
 
             for i, row in self.all_course_sections_df.iterrows():
                 if row['class_nbr'] == class_nbr and row['course_status'] == 'Not Full':
-                    return True
-                elif row['class_nbr'] == class_nbr and row['course_status'] == 'Full':
                     return False
+                elif row['class_nbr'] == class_nbr and row['course_status'] == 'Full':
+                    return True
 
         except:
             print('ERROR:')

@@ -10,7 +10,7 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
 
-class AutoEnroller(AutoEnroller):
+class AutoEnroller(CourseScraper):
 
     def __init__(self, chromedriverpath: str, timetable_url: str, student_center_login_url: str, username: str, password: str):
 

@@ -126,7 +126,7 @@ def get_all_dfs_for_courses(courses_list: list, auto_enroller: AutoEnroller) -> 
 
     all_dfs_for_courses = {}
 
-    for course in courses_list:
+    for course in tqdm(courses_list):
         course_name = course[0]
         course_number = course[1]
         class_nbr = course[2]
@@ -149,7 +149,7 @@ def all_inputted_courses_exist(all_dfs_for_courses: dict, auto_enroller: AutoEnr
 
         print('Checking if course sections inputted exist in the timetable...')
 
-        for course, df in tdqm(all_dfs_for_courses.items()):
+        for course, df in all_dfs_for_courses.items():
             auto_enroller.all_course_sections_df = df
             # course[2] is class_nbr, check get_all_dfs_for_courses method for reference
             course_sections_exists[course] = auto_enroller.course_section_exists(course[2])
@@ -262,8 +262,6 @@ def get_dependant_components_for_courses_input(courses_list: list, all_dfs_for_c
                             remaining_indexes = [i for i in all_indexes if i not in int_input_index_list]
                             int_input_index_list.extend(remaining_indexes)
 
-                            #test:    compsci 1027b 1194, biology 1001a 1260
-
                         except:
                             print('ERROR: Index must be a number. Please re-try')
                             continue
@@ -337,7 +335,7 @@ def main():
 
     auto_enroller = AutoEnroller(chrome_path, timetable_url, config.urls_dict['Student_Center_Login_Page'], login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'])
 
-    print('Retrieving all sections from the selected timetable for each course...')
+    print('Retrieving all sections for each course from the selected timetable...')
     all_dfs_for_courses = get_all_dfs_for_courses(courses_list, auto_enroller)
 
     # if courses inputted by user exists, it continues, otherwise, asks again for input
@@ -361,7 +359,7 @@ def main():
     # while there are still courses that have not become available yet, script continues
     while len(courses_list) > 0:
 
-        print('Reloading timetable and updating sections for each course...')
+        print('Reloading timetable and updating section information for remaining courses...')
 
         all_dfs_for_courses = get_all_dfs_for_courses(courses_list, auto_enroller)
 
@@ -377,17 +375,18 @@ def main():
 
             dependant_course_components_dict = {}
 
-            # if list not empty meaning this course section has at least one dependant course component
-            if dependant_components_for_courses_input[(course_name, course_number, class_nbr)]:
+            # if dict has elements in it
+            if dependant_components_for_courses_input:
+                # if value (which is a list) for the key is not empty, it means this course section has at least one
+                # dependant course component
+                if dependant_components_for_courses_input[(course_name, course_number, class_nbr)]:
 
-                dependant_course_components = dependant_components_for_courses_input[(course_name, course_number, class_nbr)]
+                    dependant_course_components = dependant_components_for_courses_input[(course_name, course_number, class_nbr)]
 
-                for dependant_course_component in dependant_course_components:
-                    # gets first list and second val for course component name as key, ex: ['1210','LAB]
-                    course_component_name = dependant_course_component[0][1]
-                    dependant_course_components_dict[course_component_name] = dependant_course_component
-
-            print(dependant_course_components_dict)
+                    for dependant_course_component in dependant_course_components:
+                        # gets first list and second val for course component name as key, ex: ['1210','LAB]
+                        course_component_name = dependant_course_component[0][1]
+                        dependant_course_components_dict[course_component_name] = dependant_course_component
 
             # if course section is not full
             if not auto_enroller.course_section_is_full(class_nbr):
@@ -406,14 +405,12 @@ def main():
                                 selected_components_to_enroll_in.append(indiv_component)
                                 break
 
-                    print(selected_components_to_enroll_in)
                     args ={}
 
                     for index, selected_component in enumerate(selected_components_to_enroll_in):
                         key = 'dependant_class_nbr_with_course_component_list_' + str(index+1)
                         args[key] = selected_component
 
-                    print(args)
                     # alert and enroll
                     alert(course)
                     if args:
@@ -438,7 +435,7 @@ def main():
                 # for this if statment to be triggered
 
                 if len(courses_list) > 0:
-                    print('Moving onto the next course...')
+                    print('Moving onto the next course...\n')
 
             # course section is full
             else:

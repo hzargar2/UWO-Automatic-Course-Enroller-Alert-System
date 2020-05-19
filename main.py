@@ -1,6 +1,6 @@
 from auto_enroller import *
 import time, config, sys, vlc, threading, select, os, login_credentials_DO_NOT_PUSH, traceback
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -42,7 +42,7 @@ def get_courses_list_input() -> list:
 
             # gets course names input from user
             course_names = input(
-                'Enter the course name, course code, and class nbr, seperated by commas for multiple courses. Each portion of the course must be seperated by a space. (Example: COMPSCI 1026A 1625, PSYCHOL 2035A 1210)\n'
+                'Enter the course name, course code, and class nbr, seperated by commas for multiple courses. Each portion of the course must be seperated by a space. (Example: COMPSCI 1026A 1625, PSYCHOL 2035A 1210)\n\n'
                 'Input: ')
             print('')
 
@@ -127,12 +127,13 @@ def get_all_dfs_for_courses(courses_list: list, auto_enroller: AutoEnroller) -> 
     all_dfs_for_courses = {}
 
     for course in tqdm(courses_list):
+
         course_name = course[0]
         course_number = course[1]
         class_nbr = course[2]
 
         auto_enroller.set_all_course_sections_df(course_name, course_number)
-        time.sleep(5)
+        time.sleep(10)
 
         all_dfs_for_courses[(course_name, course_number, class_nbr)] = auto_enroller.all_course_sections_df
 
@@ -179,9 +180,9 @@ def auto_enroll() -> bool:
 
     while True:
 
-        auto_enroll = input('\nWould you like to AUTO ENROLL in these courses as soon as they are available? (Enter Y or N)\n\n'
+        auto_enroll = input('Would you like to AUTO ENROLL in these courses as soon as they are available? (Enter Y or N)\n\n'
                             'Input: ').lower()
-        print('\n')
+        print('')
 
         if auto_enroll not in ['y','n']:
             print('ERROR: Incorrect entry. Make sure you inputted Y or N.')
@@ -227,20 +228,23 @@ def get_dependant_components_for_courses_input(courses_list: list, all_dfs_for_c
                     while True:
 
                         print("This {0} {1} {2} has a required '{3}' component.\n".format(course_name.upper(), course_number.upper(), class_nbr, dependant_component_df.iloc[0]['course_component']))
-                        print("Please enter the index values (numbers of the leftmost coloumn) for the desired '{0}' component you would like to enroll in.\n".format(dependant_component_df.iloc[0]['course_component']))
-                        print('NOTE: Please order your entries in order of preference (most preferred to least preferred). Any remaining sections not entered will be automatically considered for enrollment\n'
-                              'if all preferences inputted are FULL. This is because enrollment in a course can only be done when all course \n '
-                              'components (LEC, LAB, TUT) selected are not full. (Example entry: 1,2,5) \n'
-                              'Additionally, only sections that have the same campus location as the inputted section will be shown since it is \n'
-                              'assumed a student enrolled in a lecture on MAIN campus cannot enroll in a lab at an affiliate college like KINGS, BRESCIA, etc... \n'
-                              'as those seats will be reserved for affiliate college students.')
-
+                        print("""
+                        Please enter the index values (numbers of the leftmost coloumn) for the desired '{0}' 
+                        component you would like to enroll in. Enter values based on order of preference (most preferred
+                        to least preferred). Any values not entered will be considered as possible options if all other
+                        sections entered are full.
+                        
+                        Note: Only sections that have the same course location as the course inputted originally are
+                        shown as possible options because it is assumed that students cannot enroll in a course with 
+                        course components scattered across MAIN and other affiliate colleges. For example, a student
+                        cannot enroll in a LEC on MAIN campus and a LAB on KINGS campus.
+                        """.format(dependant_component_df.iloc[0]['course_component']))
 
                         print(dependant_component_df)
 
-                        print('\n')
+                        print('')
                         input_index_list = input('Input: ')
-                        print('\n')
+                        print('')
 
                         try:
                             # splits user inputs into seperate index strings
@@ -337,6 +341,7 @@ def main():
 
     print('Retrieving all sections for each course from the selected timetable...')
     all_dfs_for_courses = get_all_dfs_for_courses(courses_list, auto_enroller)
+    print('')
 
     # if courses inputted by user exists, it continues, otherwise, asks again for input
     while True:
@@ -354,14 +359,13 @@ def main():
     # if auto enrolling is selected
     if bool_auto_enroll:
         dependant_components_for_courses_input = get_dependant_components_for_courses_input(courses_list, all_dfs_for_courses, auto_enroller)
-        print(dependant_components_for_courses_input)
 
     # while there are still courses that have not become available yet, script continues
     while len(courses_list) > 0:
 
         print('Reloading timetable and updating section information for remaining courses...')
-
         all_dfs_for_courses = get_all_dfs_for_courses(courses_list, auto_enroller)
+        print('')
 
         for index, course in enumerate(courses_list):
 

@@ -56,8 +56,8 @@ class CourseScraper:
                 # if user inputted course name and course number is in the h4 tag, it gets the appropriate table for
                 # that course
 
-                if course_name.lower() == course.text.split(' ')[0].lower() and course_number.lower() == \
-                        course.text.split(' ')[1].lower():
+                if course_name.upper() == course.text.split(' ')[0].upper() and course_number.upper() == \
+                        course.text.split(' ')[1].upper():
                     course_sections_table = courses_in_search[index].find_next('tbody')
 
                     # Gets all tr tags in the table (course slots), then slices and gets every other because every other

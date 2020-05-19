@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import time, os, config
 from selenium import webdriver
+from selenium.common.exceptions import *
 from course_scraper import *
 
 import login_credentials_DO_NOT_PUSH
@@ -58,6 +59,10 @@ class AutoEnroller(CourseScraper):
             time.sleep(2)
 
             print('Enroll in Classes clicked.')
+
+            # del course if it already exists in the course enrollment worksheet or else system won't let me add it
+            self.__del_course_in_course_enrollment_worksheet(course_number, class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2)
+
             # class nbr field fill in
             class_nbr_field = self.browser.find_element_by_id('DERIVED_REGFRM1_CLASS_NBR')
             class_nbr_field.send_keys(class_nbr)
@@ -65,7 +70,7 @@ class AutoEnroller(CourseScraper):
             self.browser.find_element_by_xpath("//*[@value='Enter']").click()
             time.sleep(2)
 
-            print('Class nbr submitted')
+            print('Class nbr submitted.')
 
             # need extra step for enrollment if the course has dependant course components like a lab, tut, or lec. A
             # course can have all 3 components so need to account for the case that a course has all 3.
@@ -133,7 +138,7 @@ class AutoEnroller(CourseScraper):
             self.browser.find_element_by_xpath("//*[@value='Next']").click()
             time.sleep(2)
 
-            # Confirm course section(s) selection by clicking 'Next5' again.
+            # Confirm course section(s) selection by clicking 'Next' again.
             # Course selection then added to course enrollement worksheet.
             # Still not enrolled. Must finalize the course enrollment work sheet in the next step.
 
@@ -189,12 +194,58 @@ class AutoEnroller(CourseScraper):
             print('ERROR:')
             print(traceback.format_exc())
 
+    def __del_course_in_course_enrollment_worksheet(self, course_number: str, class_nbr: str, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2):
+
+        try:
+
+            # del course if it already exists in the course enrollment worksheet or else system won't let me add it
+            if dependant_class_nbr_with_course_component_list_1:
+                class_nbr_dependant_1 = dependant_class_nbr_with_course_component_list_1[0]
+            else:
+                class_nbr_dependant_1 = None
+
+            if dependant_class_nbr_with_course_component_list_2:
+                class_nbr_dependant_2 = dependant_class_nbr_with_course_component_list_2[0]
+            else:
+                class_nbr_dependant_2 = None
+
+            all_class_nbrs = [class_number for class_number in [class_nbr, class_nbr_dependant_1, class_nbr_dependant_2] if class_number is not None]
+
+            # get current page html
+            html = self.browser.page_source
+            soup = BeautifulSoup(html, 'lxml')
+
+            course_enrollment_worksheet_table = soup.find("table", {"class": "PSLEVEL1GRID"})
+            tr_tags = course_enrollment_worksheet_table.find_all('tr')
+
+            #first tr tag is useless, just table column data
+            tr_tags = tr_tags[1:]
+
+            for tr in tr_tags:
+
+                if 'Your course enrollment worksheet is empty' in tr.text:
+                    break
+
+                for class_number in all_class_nbrs:
+
+                    if tr.find('a', {'id': "P_DELETE$0"}) and course_number.upper() in tr.text and class_nbr in tr.text:
+                        self.browser.find_element_by_id("P_DELETE$0").click()
+                        time.sleep(2)
+                        break
+
+        except NoSuchElementException:
+            print(traceback.format_exc())
+
+
+
+
+
 
 '''TEST CASE'''
 
 # auto_enroller = AutoEnroller(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'], config.urls_dict['Student_Center_Login_Page'], login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'])
 # auto_enroller.enroll('COMPSCI', '1027B', '1194', ['1310','LAB'])
-#
+# #
 #
 
 

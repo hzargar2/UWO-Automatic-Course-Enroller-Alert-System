@@ -158,6 +158,9 @@ class AutoEnroller(CourseScraper):
                 if dependant is not None:
                     print("SUCCESS: ENROLLED IN {0} {1} '{2}' CLASS NBR {3}".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0]))
 
+            # switches back to student center login window so new tab isn't opened for next course, acts as reset
+            self.switch_to_window_handle_with_url(self.student_center_login_url)
+
         except:
             print('ERROR:')
             print(traceback.format_exc())
@@ -236,6 +239,73 @@ class AutoEnroller(CourseScraper):
         except NoSuchElementException:
             print(traceback.format_exc())
 
+    def get_current_course_enrollment(self) -> pd.DataFrame:
+
+        # switches to student center login window
+        self.switch_to_window_handle_with_url(self.student_center_login_url)
+
+        print('Logging into student center...')
+        username_field = self.browser.find_element_by_id("userid")
+        passsword_field = self.browser.find_element_by_id("pwd")
+
+        username_field.send_keys(self.username)
+        passsword_field.send_keys(self.password)
+
+        # submit button for login info
+        self.browser.find_element_by_xpath("//*[@value='Sign In']").click()
+        time.sleep(2)
+        print('Logged in.')
+
+        # switches to correct frame to be ble to access required elements
+        iframe = self.browser.find_element_by_xpath('//iframe[@name="TargetContent"]')
+        self.browser.switch_to.frame(iframe)
+        print('Switched iframes.')
+
+        # 'Enroll in Classes' link button
+        self.browser.find_element_by_partial_link_text('My Weekly Schedule').click()
+        time.sleep(2)
+        print("'My Weekly Schedule' clicked.")
+
+        # click List view
+        self.browser.find_element_by_xpath("//input[@id='DERIVED_REGFRM1_SSR_SCHED_FORMAT$258$']").click()
+        print("'List View' clicked")
+        time.sleep(2)
+
+        html = self.browser.page_source
+        soup = BeautifulSoup(html, 'lxml')
+
+        # get full course name tags
+        td_tags = soup.find_all('td', {'class':'PAGROUPDIVIDER'})
+
+        # initialize df
+        df = pd.DataFrame(columns=['full_course_name'])
+
+        # iterate through tags to get all the full course names
+        for td in td_tags:
+            full_course_name = td.text
+            df = df.append({'full_course_name':full_course_name}, ignore_index=True)
+
+        # switches back to student center login window, asks as a reset to prevent too many windows being opened,
+        # uses less memory
+        self.switch_to_window_handle_with_url(self.student_center_login_url)
+
+        return df
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -244,8 +314,9 @@ class AutoEnroller(CourseScraper):
 '''TEST CASE'''
 
 # auto_enroller = AutoEnroller(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'], config.urls_dict['Student_Center_Login_Page'], login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'])
-# auto_enroller.enroll('COMPSCI', '1027B', '1194', ['1310','LAB'])
+# #auto_enroller.enroll('COMPSCI', '1027B', '1194', ['1310','LAB'])
+# # #
 # #
 #
-
+# auto_enroller.get_current_course_enrollment()
 

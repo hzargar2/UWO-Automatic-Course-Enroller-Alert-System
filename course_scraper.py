@@ -10,8 +10,8 @@ class CourseScraper:
     def __init__(self, chromedriverpath, timetable_url):
 
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("disable-gpu")
+        # chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("disable-gpu")
 
         self.browser = webdriver.Chrome(chromedriverpath, options=chrome_options)
         self.timetable_url = timetable_url
@@ -129,7 +129,7 @@ class CourseScraper:
 
     def __add_fall_winter_course_sections_to_df(self, course_sections):
 
-        '''Initializes df with the coorrect coloumns for the timetable since summer and fall/winter timetable structure
+        '''Initializes df with the correct coloumns for the timetable since summer and fall/winter timetable structure
         is different and adds all the course sections to the self.all_course_sections_df pandas Dataframe object'''
 
         try:
@@ -311,6 +311,7 @@ class CourseScraper:
             # We can easily switch to this lat window with the -1 index.
 
             self.browser.execute_script("window.open('{0}')".format(url))
+            time.sleep(2)
             self.browser.switch_to.window(self.browser.window_handles[-1])
 
         except:

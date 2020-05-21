@@ -1,8 +1,9 @@
 from bs4 import BeautifulSoup
-import time, os, config
+import time, os, config, re
 from selenium import webdriver
 from selenium.common.exceptions import *
 from course_scraper import *
+
 
 import login_credentials_DO_NOT_PUSH
 
@@ -31,6 +32,11 @@ class AutoEnroller(CourseScraper):
                 print('Try to have set_all_course_sections_df() execute only once in the code logic to reduce computation time for each course iteration (5s vs 10s).\n ')
                 self.set_all_course_sections_df(course_name, course_number)
                 time.sleep(5)
+
+            print("ATTEMPTING TO ENROLL IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
+            for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
+                if dependant is not None:
+                    print("ATTEMPTING TO ENROLL IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0]))
 
             # switches to student center login window
             self.switch_to_window_handle_with_url(self.student_center_login_url)
@@ -98,11 +104,11 @@ class AutoEnroller(CourseScraper):
             self.browser.find_element_by_xpath("//*[@value='Finish Enrolling']").click()
             time.sleep(2)
 
-            print("SUCCESS: ENROLLED IN {0} {1} '{2}' CLASS NBR {3}".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
+            print("SUCCESS: ENROLLED IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
             for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
                 if dependant is not None:
-                    print("SUCCESS: ENROLLED IN {0} {1} '{2}' CLASS NBR {3}".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0]))
-
+                    print("SUCCESS: ENROLLED IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0]))
+            print('')
             # switches back to student center login page so switch_to_window_handle_with_url doesn't open another a new window
             # if other methods are ran. Resets the pag destination so less memory is used.
             self.browser.get(self.student_center_login_url)
@@ -111,7 +117,7 @@ class AutoEnroller(CourseScraper):
             print('ERROR:')
             print(traceback.format_exc())
 
-    def swap(self, swap_full_course_name, course_name: str, course_number: str, class_nbr: str,
+    def swap(self, swap_full_course_name: str, course_name: str, course_number: str, class_nbr: str,
              dependant_class_nbr_with_course_component_list_1 = None,
              dependant_class_nbr_with_course_component_list_2 = None):
 
@@ -126,6 +132,12 @@ class AutoEnroller(CourseScraper):
                     'Try to have set_all_course_sections_df() execute only once in the code logic to reduce computation time for each course iteration (5s vs 10s).\n ')
                 self.set_all_course_sections_df(course_name, course_number)
                 time.sleep(5)
+
+            print("ATTEMPTING TO SWAP ({4}) FOR ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr, swap_full_course_name.upper()))
+            for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
+                if dependant is not None:
+                    print("ATTEMPTING TO SWAP ({4}) FOR ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0], swap_full_course_name.upper()))
+
 
             # switches to student center login window
             self.switch_to_window_handle_with_url(self.student_center_login_url)
@@ -172,12 +184,27 @@ class AutoEnroller(CourseScraper):
             drop_down_menu = soup.find('select', {'id':'DERIVED_REGFRM1_DESCR50$225$'})
             # gets options in drop down menu html
             options = drop_down_menu.find_all('option')
+
             # iterates through options to see if any of the texts match the course the user wants to swap the new course with
             for option in options:
-                if swap_full_course_name.upper() in option.text.strip().upper():
-                    option_tag = str(option).split()
-                    option_tag_id = option_tag[2].replace('id=', '').replace('"', '')
-                    self.browser.find_element_by_xpath('//option[@id={0}'.format(option_tag_id)).click()
+
+                # swap_full_course_name has the course name, number and full course title. We are only comparing the course
+                # name and course number for our selection so we need to get the string portion that has only those
+                # componenets. Eg: 'Biology 1002B - BIOLOGY FOR SCIENCE II' becomes 'Biology 1002B' then we convert
+                # to upper case to standardize so final product is 'BIOLOGY 1002B' and we compare this with the
+                # upper case of the tag's text to confirm if they are the same
+
+                swap_course_name_and_course_number = swap_full_course_name.strip().split(' - ')
+                swap_course_name_and_course_number = swap_course_name_and_course_number[0].upper()
+
+                if swap_course_name_and_course_number in option.text.strip().upper():
+
+                    option_tag = str(option)
+
+                    # gets the value attributes value in the option tag by searching for whatever it is between the
+                    # quotation marks, regular expresion
+                    option_tag_value = re.search('value="(.*?)"', option_tag).group(1)
+                    self.browser.find_element_by_xpath("//option[@value='{0}']".format(option_tag_value)).click()
                     break
 
             # input class_nbr of new course that user wants to add and press enter
@@ -193,9 +220,9 @@ class AutoEnroller(CourseScraper):
                 self.__select_dependant_course_components(class_nbr, dependant_class_nbr_with_course_component_list_1,
                                                           dependant_class_nbr_with_course_component_list_2)
 
-            # click 'Next' button on page where we have selected all dependant course sections to go to next page
-            self.browser.find_element_by_xpath("//*[@value='Next']").click()
-            time.sleep(2)
+                # click 'Next' button on page where we have selected all dependant course sections to go to next page
+                self.browser.find_element_by_xpath("//*[@value='Next']").click()
+                time.sleep(2)
 
             # Confirm course section(s) selection by clicking 'Next' again.
             # Course selection then added to course enrollement worksheet.
@@ -207,14 +234,17 @@ class AutoEnroller(CourseScraper):
             self.browser.find_element_by_xpath("//input[@value='Finish Swapping']").click()
             time.sleep(2)
 
+            print("SUCCESS: SWAPPED ({4}) FOR ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr, swap_full_course_name.upper()))
+            for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
+                if dependant is not None:
+                    print("SUCCESS: SWAPPED ({4}) FOR ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0], swap_full_course_name.upper()))
+            print('')
             # switches back to student center login page so switch_to_window_handle_with_url doesn't open another a new window
             # if other methods are ran. Resets the pag destination so less memory is used.
             self.browser.get(self.student_center_login_url)
 
         except:
             print(traceback.format_exc())
-
-
 
     def has_dependant_course_components(self) -> bool:
 
@@ -345,7 +375,7 @@ class AutoEnroller(CourseScraper):
 
                 for class_number in all_class_nbrs:
 
-                    if tr.find('a', {'id': "P_DELETE$0"}) and course_number.upper() in tr.text and class_nbr in tr.text:
+                    if tr.find('a', {'id': "P_DELETE$0"}) and course_number.upper() in tr.text and class_number in tr.text:
                         self.browser.find_element_by_id("P_DELETE$0").click()
                         time.sleep(2)
                         break
@@ -353,7 +383,9 @@ class AutoEnroller(CourseScraper):
         except NoSuchElementException:
             print(traceback.format_exc())
 
-    def get_current_course_enrollment(self) -> pd.DataFrame:
+    def get_current_course_enrollment_df(self) -> pd.DataFrame:
+
+        print("RETRIEVING STUDENT'S CURRENT TIMETABLE...")
 
         # switches to student center login window
         self.switch_to_window_handle_with_url(self.student_center_login_url)
@@ -377,13 +409,13 @@ class AutoEnroller(CourseScraper):
 
         # 'Enroll in Classes' link button
         self.browser.find_element_by_partial_link_text('My Weekly Schedule').click()
-        time.sleep(2)
+        time.sleep(5)
         print("'My Weekly Schedule' clicked.")
 
         # click List view
         self.browser.find_element_by_xpath("//input[@id='DERIVED_REGFRM1_SSR_SCHED_FORMAT$258$']").click()
-        print("'List View' clicked")
-        time.sleep(2)
+        print("'List View' clicked.")
+        time.sleep(4)
 
         html = self.browser.page_source
         soup = BeautifulSoup(html, 'lxml')
@@ -396,11 +428,13 @@ class AutoEnroller(CourseScraper):
 
         # iterate through tags to get all the full course names
         for td in td_tags:
-            full_course_name = td.text
+
+            full_course_name = td.text.strip()
             df = df.append({'full_course_name':full_course_name}, ignore_index=True)
 
         # switches back to student center login page so switch_to_window_handle_with_url doesn't open another a new window
         # if other methods are ran. Resets the pag destination so less memory is used.
+        print('SUCCESS: CURRENT TIMETABLE RETRIEVED.\n')
         self.browser.get(self.student_center_login_url)
 
         return df
@@ -411,10 +445,12 @@ class AutoEnroller(CourseScraper):
 
 '''TEST CASE'''
 
-auto_enroller = AutoEnroller(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'], config.urls_dict['Student_Center_Login_Page'], login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'])
-#auto_enroller.enroll('COMPSCI', '1027B', '1194', ['1310','LAB'])
+# auto_enroller = AutoEnroller(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'], config.urls_dict['Student_Center_Login_Page'], login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'])
+# #auto_enroller.enroll('COMPSCI', '1027B', '1194', ['1310','LAB'])
+# # # #
 # # #
 # #
+# # auto_enroller.swap('Computer Science 1027B - COMP SCI FUNDAMENTALS II','STATS', '2244B', '1360', ['1401','LAB'])
+# #
 #
-auto_enroller.swap('Computer Science 1027B - COMP SCI FUNDAMENTALS II','STATS', '2244B', '1360', ['1401','LAB'])
-
+# print(auto_enroller.get_current_course_enrollment_df())

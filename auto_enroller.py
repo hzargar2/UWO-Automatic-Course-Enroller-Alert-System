@@ -85,9 +85,9 @@ class AutoEnroller(CourseScraper):
 
                 self.__select_dependant_course_components(class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2)
 
-            #click 'Next' button on page where we have selected all dependant course sections to go to next page
-            self.browser.find_element_by_xpath("//*[@value='Next']").click()
-            time.sleep(2)
+                #click 'Next' button on page where we have selected all dependant course sections to go to next page
+                self.browser.find_element_by_xpath("//*[@value='Next']").click()
+                time.sleep(2)
 
             # Confirm course section(s) selection by clicking 'Next' again.
             # Course selection then added to course enrollement worksheet.

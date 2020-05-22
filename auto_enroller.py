@@ -4,9 +4,6 @@ from selenium import webdriver
 from selenium.common.exceptions import *
 from course_scraper import *
 
-
-import login_credentials_DO_NOT_PUSH
-
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
@@ -569,6 +566,7 @@ class AutoEnroller(CourseScraper):
 
         # switches back to student center login page so switch_to_window_handle_with_url doesn't open another a new window
         # if other methods are ran. Resets the pag destination so less memory is used.
+
         print('SUCCESS: CURRENT TIMETABLE RETRIEVED.\n')
         self.browser.get(self.student_center_login_url)
 
@@ -606,17 +604,3 @@ class AutoEnroller(CourseScraper):
         except Exception as e:
             print(e)
 
-
-
-
-'''TEST CASE'''
-
-# auto_enroller = AutoEnroller(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'], config.urls_dict['Student_Center_Login_Page'], login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'])
-# #auto_enroller.enroll('COMPSCI', '1027B', '1194', ['1310','LAB'])
-# # # #
-# # #
-# #
-# # auto_enroller.swap('Computer Science 1027B - COMP SCI FUNDAMENTALS II','STATS', '2244B', '1360', ['1401','LAB'])
-# #
-#
-# print(auto_enroller.get_current_course_enrollment_df())

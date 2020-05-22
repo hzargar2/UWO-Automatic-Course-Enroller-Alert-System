@@ -52,6 +52,10 @@ class AutoEnroller(CourseScraper):
             self.browser.find_element_by_xpath("//*[@value='Sign In']").click()
             time.sleep(2)
 
+            if 'Your User ID and/or Password are invalid.' in self.browser.page_source:
+                raise Exception("FAILED: LOGIN FAILED.")
+
+
             print('Logged in.')
 
             # switches to correct frame to be ble to access required elements
@@ -109,6 +113,10 @@ class AutoEnroller(CourseScraper):
             self.browser.find_element_by_xpath("//*[@value='Proceed to Step 2 of 3']").click()
             time.sleep(2)
 
+            # raise exception if course enrollemnt times are closed or havn't begun.
+            if 'You cannot enroll at this time.' in self.browser.page_source:
+                raise Exception("FAILED: CANNOT ENROLL IN ({0} {1} '{2}' CLASS NBR {3}). ENROLLMENT HAS NOT BEGUN AND YOU DO NOT HAVE AN AN APPOINTMENT TO ENROLL OR ONLINE ENROLLMENT HAS BEEN CLOSED FOR THIS TERM/SESSION.")
+
             # click 'Finish Enrolling
             self.browser.find_element_by_xpath("//*[@value='Finish Enrolling']").click()
             time.sleep(3)
@@ -136,6 +144,7 @@ class AutoEnroller(CourseScraper):
              dependant_class_nbr_with_course_component_list_1 = None,
              dependant_class_nbr_with_course_component_list_2 = None):
 
+        try:
 
             # Checks to see if the course section exists in the current dataframe. Otherwise, runs set_all_current_sections_df
             # again. Better than running the method each time which slows it down
@@ -225,9 +234,12 @@ class AutoEnroller(CourseScraper):
             enter_class_nbr = self.browser.find_element_by_xpath("//input[@id='DERIVED_REGFRM1_CLASS_NBR']")
             enter_class_nbr.send_keys(class_nbr)
             self.browser.find_element_by_xpath("//input[@name='DERIVED_REGFRM1_SSR_PB_ADDTOLIST2$106$']").click()
-            time.sleep(4)
+            time.sleep(3)
 
-            if ('Duplicate - Already enrolled' in self.browser.page_source):
+            if 'You do not have a valid appointment for this session' in self.browser.page_source:
+                raise Exception("FAILED: CANNOT ENROLL IN ({0} {1} '{2}' CLASS NBR {3}). ENROLLMENT HAS NOT BEGUN AND YOU DO NOT HAVE AN AN APPOINTMENT TO ENROLL OR ONLINE ENROLLMENT HAS BEEN CLOSED FOR THIS TERM/SESSION.")
+
+            if 'Duplicate - Already enrolled' in self.browser.page_source:
                 raise Exception("FAILED: ALREADY ENROLLED IN COURSE ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
 
             # need extra step for enrollment if the course has dependant course components like a lab, tut, or lec. A
@@ -272,7 +284,8 @@ class AutoEnroller(CourseScraper):
             # if other methods are ran. Resets the pag destination so less memory is used.
             self.browser.get(self.student_center_login_url)
 
-
+        except Exception:
+            print(e)
 
     def has_dependant_course_components(self) -> bool:
 
@@ -539,6 +552,33 @@ class AutoEnroller(CourseScraper):
 
         return df
 
+    def bool_login_creds_valid(self):
+
+        try:
+            print('TESTING LOGIN CREDENTIALS FOR VALIDITY...')
+            # switches to student center login window
+            self.switch_to_window_handle_with_url(self.student_center_login_url)
+
+            print('Logging into student center...')
+            username_field = self.browser.find_element_by_id("userid")
+            passsword_field = self.browser.find_element_by_id("pwd")
+
+            username_field.send_keys(self.username)
+            passsword_field.send_keys(self.password)
+
+            # submit button for login info
+            self.browser.find_element_by_xpath("//*[@value='Sign In']").click()
+            time.sleep(2)
+
+            if 'Your User ID and/or Password are invalid.' in self.browser.page_source:
+                self.browser.get(self.student_center_login_url)
+                return False
+            else:
+                self.browser.get(self.student_center_login_url)
+                return True
+
+        except Exception as e:
+            print(e)
 
 
 

@@ -1,5 +1,5 @@
 from auto_enroller import *
-import time, config, sys, vlc, threading, select, os, login_credentials_DO_NOT_PUSH, traceback
+import time, config, sys, vlc, select, os, traceback
 from tqdm.auto import tqdm
 
 pd.set_option('display.max_rows', 500)
@@ -77,17 +77,23 @@ def get_chrome_path_input() -> str:
 
     while True:
 
-        chrome_version = input('\nSelect the version of your Google Chrome browser. This can be found in Help -> About Google Chrome. (ENTER 1,2, or 3)\n\n'
+        chrome_version = input('\nSelect the version of your operating system and Google Chrome browser version. This can be found in Help -> About Google Chrome. (ENTER 1,2,3,4,5,6,7,8, or 9)\n\n'
                           'Available options: \n'
-                          '1. 80.0.3987.106\n'
-                          '2. 81.0.4044.138\n'
-                          '3. 83.0.4103.39\n\n'
+                          '1. Mac OS 80.0.3987.106\n'
+                          '2. Mac OS 81.0.4044.138\n'
+                          '3. Mac OS 83.0.4103.39\n\n'
+                          '4. Windows 80.0.3987.106\n'
+                          '5. Windows 81.0.4044.138\n'
+                          '6. Windows 83.0.4103.39\n\n'
+                          '7. Linux 80.0.3987.106\n'
+                          '8. Linux 81.0.4044.138\n'
+                          '9. Linux 83.0.4103.39\n\n'
                           'Input: ')
         print('')
 
         my_path = os.path.dirname(__file__)
 
-        if chrome_version not in ['1', '2', '3']:
+        if chrome_version not in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
             print('ERROR: Incorrect entry. Make sure you inputted the number and not the text')
             continue
 
@@ -97,9 +103,27 @@ def get_chrome_path_input() -> str:
         elif chrome_version == '2':
             chrome_path = os.path.join(my_path, "chromedriver_mac_81.0.4044.138")
 
-        # chrome version == '3'
-        else:
+        elif chrome_version == '3':
             chrome_path = os.path.join(my_path, "chromedriver_mac_83.0.4103.39")
+
+        elif chrome_version == '4':
+            chrome_path = os.path.join(my_path, "chromedriver_windows_80_0_3987_106.exe")
+
+        elif chrome_version == '5':
+            chrome_path = os.path.join(my_path, "chromedriver_windows_81_0_4044_138.exe")
+
+        elif chrome_version == '6':
+            chrome_path = os.path.join(my_path, "chromedriver_windows_83_0_4103_39.exe")
+
+        elif chrome_version == '7':
+            chrome_path = os.path.join(my_path, "chromedriver_linux_80_0_3987_106")
+
+        elif chrome_version == '8':
+            chrome_path = os.path.join(my_path, "chromedriver_linux_81_0_4044_138")
+
+        # chrome_version == '9'
+        else:
+            chrome_path = os.path.join(my_path, "chromedriver_linux_80_0_3987_106")
 
         return chrome_path
 

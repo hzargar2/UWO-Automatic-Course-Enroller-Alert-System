@@ -67,7 +67,8 @@ class AutoEnroller(CourseScraper):
             print('Enroll in Classes clicked.')
 
             # del course if it already exists in the course enrollment worksheet or else system won't let me add it
-            self.__del_course_in_course_enrollment_worksheet(course_number, class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2)
+            # self.__del_course_in_course_enrollment_worksheet(course_number, class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2)
+            self.__del_all_courses_in_course_enrollment_worksheet()
 
             # class nbr field fill in
             class_nbr_field = self.browser.find_element_by_id('DERIVED_REGFRM1_CLASS_NBR')
@@ -86,15 +87,23 @@ class AutoEnroller(CourseScraper):
                 self.__select_dependant_course_components(class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2)
 
                 #click 'Next' button on page where we have selected all dependant course sections to go to next page
-                self.browser.find_element_by_xpath("//*[@value='Next']").click()
-                time.sleep(2)
+                try:
+                    self.browser.find_element_by_xpath("//*[@value='Next']").click()
+                    time.sleep(2)
+                except NoSuchElementException as e:
+                    print(e)
 
             # Confirm course section(s) selection by clicking 'Next' again.
             # Course selection then added to course enrollement worksheet.
             # Still not enrolled. Must finalize the course enrollment work sheet in the next step.
 
-            self.browser.find_element_by_xpath("//*[@value='Next']").click()
-            time.sleep(2)
+            try:
+                self.browser.find_element_by_xpath("//*[@value='Next']").click()
+                time.sleep(2)
+            except NoSuchElementException as e:
+                print(e)
+
+            print('Added to course enrollment worksheet.')
 
             # click 'Proceed to Step 2 of 3'
             self.browser.find_element_by_xpath("//*[@value='Proceed to Step 2 of 3']").click()
@@ -102,26 +111,31 @@ class AutoEnroller(CourseScraper):
 
             # click 'Finish Enrolling
             self.browser.find_element_by_xpath("//*[@value='Finish Enrolling']").click()
-            time.sleep(2)
+            time.sleep(3)
+
+            if 'You are already enrolled in this class' in self.browser.page_source:
+                raise Exception("FAILED: YOU ARE ALREADY ENROLLED IN ({0} {1} '{2}' CLASS NBR {3}). IF YOU MEANT TO SWAP LAB/TUT COMPONENTS IN A COURSE YOU ARE ALREADY ENROLLED IN, RESTART THE PROGRAM AND MAKE SURE YOU HAVE SELECTED THE SWAP OPTION WHEN ASKED.".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
+
+            if 'The enrollment limit for the combined section has been reached.' in self.browser.page_source:
+                raise Exception("FAILED: COURSE ({0} {1} '{2}' CLASS NBR {3}) IS FULL. DISCREPANCY BETWEEN TIMETABLE AND STUDENT CENTER EXISTS.".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
 
             print("SUCCESS: ENROLLED IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
             for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
                 if dependant is not None:
                     print("SUCCESS: ENROLLED IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0]))
             print('')
+
             # switches back to student center login page so switch_to_window_handle_with_url doesn't open another a new window
             # if other methods are ran. Resets the pag destination so less memory is used.
             self.browser.get(self.student_center_login_url)
 
-        except:
-            print('ERROR:')
-            print(traceback.format_exc())
+        except Exception as e:
+            print(e)
 
     def swap(self, swap_full_course_name: str, course_name: str, course_number: str, class_nbr: str,
              dependant_class_nbr_with_course_component_list_1 = None,
              dependant_class_nbr_with_course_component_list_2 = None):
 
-        try:
 
             # Checks to see if the course section exists in the current dataframe. Otherwise, runs set_all_current_sections_df
             # again. Better than running the method each time which slows it down
@@ -211,7 +225,10 @@ class AutoEnroller(CourseScraper):
             enter_class_nbr = self.browser.find_element_by_xpath("//input[@id='DERIVED_REGFRM1_CLASS_NBR']")
             enter_class_nbr.send_keys(class_nbr)
             self.browser.find_element_by_xpath("//input[@name='DERIVED_REGFRM1_SSR_PB_ADDTOLIST2$106$']").click()
-            time.sleep(2)
+            time.sleep(4)
+
+            if ('Duplicate - Already enrolled' in self.browser.page_source):
+                raise Exception("FAILED: ALREADY ENROLLED IN COURSE ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
 
             # need extra step for enrollment if the course has dependant course components like a lab, tut, or lec. A
             # course can have all 3 components so need to account for the case that a course has all 3.
@@ -220,31 +237,42 @@ class AutoEnroller(CourseScraper):
                 self.__select_dependant_course_components(class_nbr, dependant_class_nbr_with_course_component_list_1,
                                                           dependant_class_nbr_with_course_component_list_2)
 
+                # total number of next clicks based on number of dependant componenets that are not None
                 # click 'Next' button on page where we have selected all dependant course sections to go to next page
-                self.browser.find_element_by_xpath("//*[@value='Next']").click()
-                time.sleep(2)
+                try:
+                    self.browser.find_element_by_xpath("//*[@value='Next']").click()
+                    time.sleep(2)
+                except NoSuchElementException as e:
+                    print(e)
 
             # Confirm course section(s) selection by clicking 'Next' again.
             # Course selection then added to course enrollement worksheet.
             # Still not enrolled. Must finalize the course enrollment work sheet in the next step.
 
-            self.browser.find_element_by_xpath("//*[@value='Next']").click()
-            time.sleep(2)
+            try:
+                self.browser.find_element_by_xpath("//*[@value='Next']").click()
+                time.sleep(2)
+            except NoSuchElementException as e:
+                print(e)
 
             self.browser.find_element_by_xpath("//input[@value='Finish Swapping']").click()
-            time.sleep(2)
+            time.sleep(3)
+
+            if ('The enrollment limit for the combined section has been reached.' in self.browser.page_source):
+                raise Exception("FAILED: COURSE ({0} {1} '{2}' CLASS NBR {3}) IS FULL. DISCREPANCY BETWEEN TIMETABLE AND STUDENT CENTER EXISTS.".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
+
 
             print("SUCCESS: SWAPPED ({4}) FOR ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr, swap_full_course_name.upper()))
             for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
                 if dependant is not None:
                     print("SUCCESS: SWAPPED ({4}) FOR ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0], swap_full_course_name.upper()))
             print('')
+
             # switches back to student center login page so switch_to_window_handle_with_url doesn't open another a new window
             # if other methods are ran. Resets the pag destination so less memory is used.
             self.browser.get(self.student_center_login_url)
 
-        except:
-            print(traceback.format_exc())
+
 
     def has_dependant_course_components(self) -> bool:
 
@@ -285,19 +313,17 @@ class AutoEnroller(CourseScraper):
             dependant_course_components = self.get_dependant_course_components_df(class_nbr)
             number_unique_dependant_course_components = dependant_course_components['course_component'].nunique()
 
-            # get current page html
-            html = self.browser.page_source
-            soup = BeautifulSoup(html, 'lxml')
+            # loops through the number of total tables that should be present and makes the selections, even if
+            # the LEC compoenent has its own page
+            for i in range(number_unique_dependant_course_components):
 
-            # get tables
-            tables = soup.find_all("table", {"class": "PSLEVEL1GRIDWBO"})
+                # get current page html
+                html = self.browser.page_source
+                soup = BeautifulSoup(html, 'lxml')
 
-            # checks to see if the number of tables on page match the number of unique dependant course components.
-            # If no, there is a discrepancy between the timetable and the student center course section selection.
+                # get tables
+                tables = soup.find_all("table", {"class": "PSLEVEL1GRIDWBO"})
 
-            if len(tables) == number_unique_dependant_course_components:
-
-                # loops through the number of tables on page
                 for table in tables:
 
                     tr_tags = table.find_all('tr')
@@ -311,33 +337,71 @@ class AutoEnroller(CourseScraper):
                         course_component_of_table = 'LAB'
                     elif course_component_of_table == 'Tutorial':
                         course_component_of_table = 'TUT'
-                    elif course_component_of_table == 'Lecture':
+                    else:
                         course_component_of_table = 'LEC'
 
                     for dependant_class_nbr_with_course_component_list in [dependant_class_nbr_with_course_component_list_1,
                                                                            dependant_class_nbr_with_course_component_list_2]:
+
                         # list is not None type and user inputted course component matches the course component
                         # of the table
                         if dependant_class_nbr_with_course_component_list is not None and \
                                 dependant_class_nbr_with_course_component_list[1] == course_component_of_table:
 
-                            # get the course sections in the table, from 'tr' tag number 4 and on is the useful info, ones before
-                            # are just table structure data
-                            for tr_tag in tr_tags[4:]:
+                            # if we have a dependant component that is a LEC, our main class_nbr is a TUT or LAB.
+                            # For this reason, the table for LEC components looks different and doesn't load any other
+                            # dependant components with it. LEC component table has its own page. The table also
+                            # doesn't have a title. So we need to find the LEC component, click it and press continue,
+                            # after that we arrive at another page to add the other components (TUT, LABS) as usual
+                            # (these have titles and proceed using else statement below
 
-                                # if the class_nbr in the tr_tag from the table matches the user inputted class_nbr
-                                if tr_tag.text.split()[0] == dependant_class_nbr_with_course_component_list[0]:
-                                    # get the circle button element which is an input tag. Since we got the element with
-                                    # BeautifulSoup and we need to interact with it (can't interactg with it in BeautifulSoup),
-                                    # we convert the element to a string so we can split it and then we get the id=
-                                    # component of the input tag. Then use the browser object (Selenium) to click it
+                            if course_component_of_table == 'LEC':
+                                # get the course sections in the table, from 'tr' tag index 1 and on is the useful info, one before
+                                # is just table structure data
+                                for tr_tag in tr_tags[1:]:
 
-                                    input_tag_button = tr_tag.find('input')
-                                    input_tag_button = str(input_tag_button).split()
-                                    input_tag_button_id = input_tag_button[2].replace('id=', '').replace('"', '')
+                                    # if the class_nbr in the tr_tag from the table matches the user inputted class_nbr
+                                    if tr_tag.text.split()[0] == dependant_class_nbr_with_course_component_list[0]:
+                                        # get the circle button element which is an input tag. Since we got the element with
+                                        # BeautifulSoup and we need to interact with it (can't interactg with it in BeautifulSoup),
+                                        # we convert the element to a string so we can split it and then we get the id=
+                                        # component of the input tag. Then use the browser object (Selenium) to click it
 
-                                    self.browser.find_element_by_id('{0}'.format(input_tag_button_id)).click()
-                                    break
+                                        input_tag_button = tr_tag.find('input')
+                                        input_tag_button = str(input_tag_button).split()
+                                        input_tag_button_id = input_tag_button[2].replace('id=', '').replace('"', '')
+
+                                        self.browser.find_element_by_id('{0}'.format(input_tag_button_id)).click()
+                                        # click 'Next' button on page where we have selected the lecture component
+                                        try:
+                                            self.browser.find_element_by_xpath("//*[@value='Next']").click()
+                                            time.sleep(3)
+                                            break
+
+                                        except NoSuchElementException as e:
+                                            print(e)
+
+
+                            # if componenet is TUT or LAB, we proceed as normal
+                            else:
+
+                                # get the course sections in the table, from 'tr' tag number 4 and on is the useful info, ones before
+                                # are just table structure data
+                                for tr_tag in tr_tags[4:]:
+
+                                    # if the class_nbr in the tr_tag from the table matches the user inputted class_nbr
+                                    if tr_tag.text.split()[0] == dependant_class_nbr_with_course_component_list[0]:
+                                        # get the circle button element which is an input tag. Since we got the element with
+                                        # BeautifulSoup and we need to interact with it (can't interactg with it in BeautifulSoup),
+                                        # we convert the element to a string so we can split it and then we get the id=
+                                        # component of the input tag. Then use the browser object (Selenium) to click it
+
+                                        input_tag_button = tr_tag.find('input')
+                                        input_tag_button = str(input_tag_button).split()
+                                        input_tag_button_id = input_tag_button[2].replace('id=', '').replace('"', '')
+
+                                        self.browser.find_element_by_id('{0}'.format(input_tag_button_id)).click()
+                                        break
         except:
             print(traceback.format_exc())
 
@@ -379,6 +443,42 @@ class AutoEnroller(CourseScraper):
                         self.browser.find_element_by_id("P_DELETE$0").click()
                         time.sleep(2)
                         break
+
+        except NoSuchElementException:
+            print(traceback.format_exc())
+
+    def __del_all_courses_in_course_enrollment_worksheet(self):
+
+        try:
+
+            # del all courses in course enrollment worksheet, makes catching exceptions easier as
+            # get current page html
+            html = self.browser.page_source
+            soup = BeautifulSoup(html, 'lxml')
+
+            course_enrollment_worksheet_table = soup.find("table", {"class": "PSLEVEL1GRID"})
+            tr_tags = course_enrollment_worksheet_table.find_all('tr')
+
+            # arrange tags backwards when deleting all of the courses in the worksheet because when a preceding tag is
+            # deleted, the tag delete ids get updated and must scrape the html again to get the values, instead, if we
+            # delete from bottom to up then tag ids update but maintain the same ids and therefore dont need to scrape
+            # the html. Also discard the last value of the inverted list (first value of non_inverted list) because it
+            # is insignificant (table structure data
+
+            tr_tags = tr_tags[::-1]
+            tr_tags = tr_tags[:-1]
+
+            for tr in tr_tags:
+
+                if 'Your course enrollment worksheet is empty' in tr.text:
+                    break
+
+                # gets the value attributes value in the option tag by searching for whatever it is between the
+                # quotation marks, regular expresion
+                elif bool(re.search('id="P_DELETE(.*?)"', str(tr))):
+                    tr_tag_id = re.search('id="P_DELETE(.*?)"', str(tr)).group(1)
+                    self.browser.find_element_by_xpath("//a[@id='P_DELETE{0}']".format(tr_tag_id)).click()
+                    time.sleep(2)
 
         except NoSuchElementException:
             print(traceback.format_exc())

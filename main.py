@@ -98,13 +98,13 @@ def get_chrome_path_input() -> str:
             continue
 
         elif chrome_version == '1':
-            chrome_path = os.path.join(my_path, "chromedriver_mac_80.0.3987.106")
+            chrome_path = os.path.join(my_path, "chromedriver_mac_80_0_3987_106")
 
         elif chrome_version == '2':
-            chrome_path = os.path.join(my_path, "chromedriver_mac_81.0.4044.138")
+            chrome_path = os.path.join(my_path, "chromedriver_mac_81_0_4044_138")
 
         elif chrome_version == '3':
-            chrome_path = os.path.join(my_path, "chromedriver_mac_83.0.4103.39")
+            chrome_path = os.path.join(my_path, "chromedriver_mac_83_0_4103_39")
 
         elif chrome_version == '4':
             chrome_path = os.path.join(my_path, "chromedriver_windows_80_0_3987_106.exe")

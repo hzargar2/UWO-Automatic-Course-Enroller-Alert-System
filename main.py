@@ -8,6 +8,38 @@ pd.set_option('display.width', 1000)
 
 ## dont forget to add support for linux and windoww chrome drivers, get python to detect the OS for this and download appropriate drivers.
 
+def terms_and_conditions_agreement():
+
+    while True:
+
+        print("""
+        TERMS AND CONDITIONS:
+        
+        It is up to the individual(s) to determine the legality and permissibility of using this software or any of its versions. 
+        The author does not condone or promote the use of this software or any of its versions if it is deemed to 
+        be unlawful or conflicting with the university's policies, nor will the author be held responsible for any of 
+        its usage by any individual or party or any consequences that may arise as result of its usage. By agreeing to 
+        these terms and conditions, the user accepts full responsibility for any consequences, and their usage of this 
+        software or any of its versions. It is recommended individuals confirm with the university directly to determine 
+        whether usage of this software or any of its versions is permitted prior to continuing. Do not continue 
+        if you have not done so!
+        
+        If you accept these terms and conditions, enter Y or y. 
+        If you do not accept these terms and conditions, enter N or n.
+        
+        """)
+
+        agreement = input('Input: ').lower()
+        print('')
+
+        if agreement not in ['y', 'n']:
+            print('ERROR: Incorrect entry. Make sure you inputted Y or N.\n')
+            continue
+        elif agreement == 'y':
+            return True
+        # agreement == 'n'
+        else:
+            return False
 
 def get_academic_timetable_url_input() -> str:
 
@@ -34,6 +66,47 @@ def get_academic_timetable_url_input() -> str:
                 return timetable_url
 
 
+def get_chrome_path_input() -> str:
+
+    while True:
+
+        chrome_version = input('\nSelect the version of your Google Chrome browser. This can be found in Help -> About Google Chrome. (ENTER 1,2, or 3)\n\n'
+                          'Available options: \n'
+                          '1. 80.0.3987.106\n'
+                          '2. 81.0.4044.138\n'
+                          '3. 83.0.4103.39\n\n'
+                          'Input: ')
+        print('')
+
+        my_path = os.path.dirname(__file__)
+
+        if chrome_version not in ['1', '2', '3']:
+            print('ERROR: Incorrect entry. Make sure you inputted the number and not the text')
+            continue
+
+        elif chrome_version == '1':
+            chrome_path = os.path.join(my_path, "chromedriver_mac_80.0.3987.106")
+
+        elif chrome_version == '2':
+            chrome_path = os.path.join(my_path, "chromedriver_mac_81.0.4044.138")
+
+        # chrome version == '3'
+        else:
+            chrome_path = os.path.join(my_path, "chromedriver_mac_83.0.4103.39")
+
+        return chrome_path
+
+
+def get_login_creds():
+
+    print('Enter your login credentials for your student center. Program will perform a check for validity. This will only be used if the auto-enrollment is selected. All credentials are stored locally.\n')
+    username = input('Username: ')
+    password = input('Password: ')
+    print('')
+
+    return username,password
+
+
 def get_courses_list_input() -> list:
 
     try:
@@ -41,10 +114,14 @@ def get_courses_list_input() -> list:
         while True:
 
             # gets course names input from user
-            course_names = input(
-                'Enter the course name, course code, and class nbr, seperated by commas for multiple courses. Each portion of the course must be seperated by a space. (Example: COMPSCI 1026A 1625, PSYCHOL 2035A 1210)\n'
-                'NOTE: If you would like to swap into a different lab section that is currently full in a course you are already enrolled in, please enter the class nbr of the lab section instead.\n\n'
-                'Input: ')
+            print("""Enter the course name, course code, and class nbr, seperated by commas for multiple courses. Each portion of the course must be separated by a space. (Example: COMPSCI 1026A 1625, PSYCHOL 2035A 1210)
+            
+            NOTE: If you would like to SWAP into a different LAB/TUT section that is currently full in a course you are 
+            already enrolled in, please enter the class nbr of the LAB/TUT section instead for the class nbr portion of
+            the input AND select the SWAP feature in the program once presented or else it will not work.
+            """)
+
+            course_names = input('Input: ')
             print('')
 
             # if strong is empty, it asks the user to re-enter it.
@@ -91,36 +168,6 @@ def get_courses_list_input() -> list:
 
     except Exception as e:
         print(e)
-
-
-def get_chrome_path_input() -> str:
-
-    while True:
-
-        chrome_version = input('\nSelect the version of your Google Chrome browser. This can be found in Help -> About Google Chrome. (ENTER 1,2, or 3)\n\n'
-                          'Available options: \n'
-                          '1. 80.0.3987.106\n'
-                          '2. 81.0.4044.138\n'
-                          '3. 83.0.4103.39\n\n'
-                          'Input: ')
-        print('')
-
-        my_path = os.path.dirname(__file__)
-
-        if chrome_version not in ['1', '2', '3']:
-            print('ERROR: Incorrect entry. Make sure you inputted the number and not the text')
-            continue
-
-        elif chrome_version == '1':
-            chrome_path = os.path.join(my_path, "chromedriver_mac_80.0.3987.106")
-
-        elif chrome_version == '2':
-            chrome_path = os.path.join(my_path, "chromedriver_mac_81.0.4044.138")
-
-        elif chrome_version == '3':
-            chrome_path = os.path.join(my_path, "chromedriver_mac_83.0.4103.39")
-
-        return chrome_path
 
 
 def get_all_dfs_for_courses(courses_list: list, auto_enroller: AutoEnroller) -> dict:
@@ -188,7 +235,7 @@ def boolean_auto_enroll() -> bool:
         print('')
 
         if auto_enroll not in ['y','n']:
-            print('ERROR: Incorrect entry. Make sure you inputted Y or N.')
+            print('ERROR: Incorrect entry. Make sure you inputted Y or N.\n')
             continue
         elif auto_enroll == 'y':
             return True
@@ -274,7 +321,7 @@ def get_dependant_components_for_courses_input(courses_list: list, all_dfs_for_c
                             int_input_index_list.extend(remaining_indexes)
 
                         except:
-                            print('ERROR: Index must be a number. Please re-try')
+                            print('ERROR: Index must be a number. Please re-try\n')
                             continue
 
                         # if all inputted indexes are in the df.index (entries are valid) and the inputted list is
@@ -306,7 +353,7 @@ def get_dependant_components_for_courses_input(courses_list: list, all_dfs_for_c
 
                         else:
                             not_found_indexes = [index for index in int_input_index_list if index >= len(dependant_component_df.index) or index < 0]
-                            print('ERROR: Index {0} not found. Please re-try.'.format(not_found_indexes))
+                            print('ERROR: Index {0} not found. Please re-try.\n'.format(not_found_indexes))
                             continue
 
         # values are 3d lists, if course has no dependants, value is a 1d empty list
@@ -322,10 +369,10 @@ def boolean_swap() -> bool:
 
         swap = input('Would you like to SWAP any existing courses for these new courses as soon as they are available? (Enter Y or N)\n\n'
                             'Input: ').lower()
-        print('')
+        print('\n')
 
         if swap not in ['y','n']:
-            print('ERROR: Incorrect entry. Make sure you inputted Y or N.')
+            print('ERROR: Incorrect entry. Make sure you inputted Y or N.\n')
             continue
         elif swap == 'y':
             return True
@@ -374,11 +421,11 @@ def get_swap_input_for_courses(courses_list: list, auto_enroller: AutoEnroller):
                     break
 
                 else:
-                    print('ERROR: Incorrect entry. Please try again.')
+                    print('ERROR: Incorrect entry. Please try again.\n')
                     continue
 
             except ValueError:
-                print('ERROR: Index must be a number or N. Please re-try')
+                print('ERROR: Index must be a number or N. Please re-try\n')
                 continue
 
     # returns dict of all the courses to swap with, if course is not supposed to be swapped with anything, its value
@@ -408,7 +455,7 @@ def boolean_correct_summary(swap_dict: dict, courses_list: list) -> bool:
         print('')
 
         if correct not in ['y','n']:
-            print('ERROR: Incorrect entry. Make sure you inputted Y or N.')
+            print('ERROR: Incorrect entry. Make sure you inputted Y or N.\n')
             continue
         elif correct == 'y':
             return True
@@ -443,11 +490,33 @@ def main():
 
     while True:
 
+        if not terms_and_conditions_agreement():
+            print('PROGRAM TERMINATING.')
+            exit()
+
+        # get inputs
         timetable_url = get_academic_timetable_url_input()
         chrome_path = get_chrome_path_input()
-        courses_list = get_courses_list_input()
+        username, password = get_login_creds()
 
-        auto_enroller = AutoEnroller(chrome_path, timetable_url, config.urls_dict['Student_Center_Login_Page'], login_credentials_DO_NOT_PUSH.login_creds['username'], login_credentials_DO_NOT_PUSH.login_creds['password'])
+        auto_enroller = AutoEnroller(chromedriverpath=chrome_path, timetable_url=timetable_url,
+                                     student_center_login_url=config.urls_dict['Student_Center_Login_Page'],
+                                     username=username, password=password)
+
+        # make sure login creds are valid before continuing
+        while True:
+
+            if auto_enroller.bool_login_creds_valid():
+                print('LOGIN CREDENTIALS VALID.\n'.format(username))
+                break
+            else:
+                print('INVALID LOGIN CREDENTIALS. PLEASE RETRY.\n')
+                username, password = get_login_creds()
+                auto_enroller.username = username
+                auto_enroller.password = password
+
+        # get course inputs from user
+        courses_list = get_courses_list_input()
 
         # if courses inputted by user exists, it continues, otherwise, asks again for input
         while True:
@@ -471,7 +540,11 @@ def main():
         # if auto enrolling is selected, get the dependant components, then check if user wants to swap into
         # any courses
         if bool_auto_enroll:
+
+            # get the dependant course componenets for all the courses inputted
             dependant_components_for_courses_input = get_dependant_components_for_courses_input(courses_list, all_dfs_for_courses, auto_enroller)
+
+            # if swap option is selected, get the user inputs for what courses they want to swap
             bool_swap = boolean_swap()
             if bool_swap:
                 swap_dict = get_swap_input_for_courses(courses_list, auto_enroller)
@@ -573,10 +646,10 @@ def main():
                                 line = input()
                                 break
 
-                    # delete the course from the courses_list because don;t need to search for it anymore, actual index
-                    # is index - 1 because of enumerate(courses_list) above
-                    del courses_list[index-1]
+                    # delete the course from the courses_list because don;t need to search for it anymore
+                    del courses_list[index]
 
+                    # stats 2244b 1360, compsci 1027b 1194
                     # atleast another course must be in queue for searching after the found one is dropped
                     # for this if statment to be triggered
 
@@ -587,6 +660,8 @@ def main():
                 else:
                     print('{0} {1} {2} is full. Will re-try in 5 seconds.'.format(course_name.upper(), course_number.upper(),class_nbr))
         break
+
+    print('PROGRAM TERMINATING.')
 
 if __name__ == '__main__':
     main()

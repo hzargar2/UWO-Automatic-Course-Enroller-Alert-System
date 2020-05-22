@@ -1,0 +1,10 @@
+tqdm
+pandas
+bs4
+beautifulsoup4
+selenium
+os
+python-vlc
+lxml
+
+

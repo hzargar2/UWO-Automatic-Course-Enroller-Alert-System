@@ -10,6 +10,8 @@ pd.set_option('display.width', 1000)
 
 def terms_and_conditions_agreement():
 
+    """Terms of Conditions for user to agree to prior to continuing"""
+
     while True:
 
         print("""
@@ -43,6 +45,9 @@ def terms_and_conditions_agreement():
 
 def get_academic_timetable_url_input() -> str:
 
+    """Gets the desired timetable input from the user. Whether they want to check in the Summer or Fall/Winter
+    timetables"""
+
     # Gets input from user for which timetable they want to use. Loops until 1 or 2 is selected as they are the
     # only valid answers
     while True:
@@ -67,6 +72,8 @@ def get_academic_timetable_url_input() -> str:
 
 
 def get_chrome_path_input() -> str:
+
+    """Gets path of chrome driver from user"""
 
     while True:
 
@@ -99,6 +106,8 @@ def get_chrome_path_input() -> str:
 
 def get_login_creds():
 
+    """Gets login credentials from user"""
+
     print('Enter your login credentials for your student center. Program will perform a check for validity. This will only be used if the auto-enrollment is selected. All credentials are stored locally.\n')
     username = input('Username: ')
     password = input('Password: ')
@@ -108,6 +117,8 @@ def get_login_creds():
 
 
 def get_courses_list_input() -> list:
+
+    """Gets course inputs from user for any courses they want to watch out for"""
 
     try:
 
@@ -172,6 +183,9 @@ def get_courses_list_input() -> list:
 
 def get_all_dfs_for_courses(courses_list: list, auto_enroller: AutoEnroller) -> dict:
 
+    """Scrapes every course inputted by user and stores its dataframe in a dictionary with its (course name,
+    course number, class nbr) being the key. Returns dictionary of all the dataframes."""
+
     all_dfs_for_courses = {}
 
     for course in tqdm(courses_list):
@@ -191,6 +205,8 @@ def get_all_dfs_for_courses(courses_list: list, auto_enroller: AutoEnroller) -> 
 
 
 def all_inputted_courses_exist(all_dfs_for_courses: dict, auto_enroller: AutoEnroller) -> bool:
+
+    """Checks to see if all courses inputted by the user exists. Returns bool."""
 
     try:
         # empty list to store booleans of whether the course exists or not
@@ -226,6 +242,8 @@ def all_inputted_courses_exist(all_dfs_for_courses: dict, auto_enroller: AutoEnr
 
 def boolean_auto_enroll() -> bool:
 
+    """Asks user whether they want to auto-enroll in the courses inputted."""
+
     while True:
 
         auto_enroll = input('Would you like to AUTO ENROLL in these course(s) as soon as they are available or simply have alerts? (Enter Y or N)\n'
@@ -245,6 +263,9 @@ def boolean_auto_enroll() -> bool:
 
 
 def get_dependant_components_for_courses_input(courses_list: list, all_dfs_for_courses: dict, auto_enroller: AutoEnroller):
+
+    """Gets their desired dependant course compoenents from the user if the course section entered has any.
+    Example, user can select their preferred LAB and TUT sections for a course section."""
 
     dependant_components_for_courses_input = {}
 
@@ -301,9 +322,11 @@ def get_dependant_components_for_courses_input(courses_list: list, all_dfs_for_c
                         print('')
 
                         try:
-                            # splits user inputs into seperate index strings
+                            # splits user inputs into separate index strings
                             input_index_list = input_index_list.strip().split(',')
 
+                            # cleans inputs and adds them to list so theres no whitespace or anything
+                            # around them
                             cleaned_input_index_list = []
                             for input_index in input_index_list:
                                 cleaned_input_index = input_index.strip()
@@ -352,6 +375,7 @@ def get_dependant_components_for_courses_input(courses_list: list, all_dfs_for_c
                             break
 
                         else:
+                            # gets any indexes entered that were out of range and prints them for the user
                             not_found_indexes = [index for index in int_input_index_list if index >= len(dependant_component_df.index) or index < 0]
                             print('ERROR: Index {0} not found. Please re-try.\n'.format(not_found_indexes))
                             continue
@@ -364,6 +388,9 @@ def get_dependant_components_for_courses_input(courses_list: list, all_dfs_for_c
 
 
 def boolean_swap() -> bool:
+
+    """Asks user if they want to swap any of their courses inputted for any existing courses in their current
+    timetable."""
 
     while True:
 
@@ -382,6 +409,10 @@ def boolean_swap() -> bool:
 
 
 def get_swap_input_for_courses(courses_list: list, auto_enroller: AutoEnroller):
+
+    """Gets the users inputs for what current courses they want to swap the new courses for and returns
+     a dictionary of the results. Key is new course (course name, course number, class nbr) and value is
+     the full course name of the current course in the timetable"""
 
     current_enrollment_df = auto_enroller.get_current_course_enrollment_df()
 
@@ -434,6 +465,8 @@ def get_swap_input_for_courses(courses_list: list, auto_enroller: AutoEnroller):
 
 def boolean_correct_summary(swap_dict: dict, courses_list: list) -> bool:
 
+    """Summarizes the users choices ands asks whether the choices are correct or not."""
+
     while True:
 
         print('This is the summary of what you would like to do. Is this correct? (Enter Y or N)\n')
@@ -466,6 +499,8 @@ def boolean_correct_summary(swap_dict: dict, courses_list: list) -> bool:
 
 def alert(course: list):
 
+    """Sounds alert as soon as course is not full"""
+
     try:
 
         course_name = course[0]
@@ -488,8 +523,11 @@ def alert(course: list):
 
 def main():
 
+    """All logic for program"""
+
     while True:
 
+        # if user doesn;t agree to terms and conditions then exit the program.
         if not terms_and_conditions_agreement():
             print('PROGRAM TERMINATING.')
             exit()
@@ -552,9 +590,11 @@ def main():
                 continue
 
         # while there are still courses that have not become available yet, script continues, counter 0 just
-        # prevents 2 refreshs on the timetable at the start, insignificant going forward
+        # prevents 2 of the same refreshes on the timetable at the start, insignificant past first iteration
         counter = 0
         while len(courses_list) > 0:
+
+            # gets fresh info about all the course sections for all the courses the user inputted
 
             if counter != 0:
                 print('Reloading timetable and updating section information for remaining courses...')
@@ -563,6 +603,7 @@ def main():
 
             counter += 1
 
+            # iterates through each new fresh dataframe to see if anything has opened up
             for index, course in enumerate(courses_list):
 
                 course_name = course[0]
@@ -584,8 +625,11 @@ def main():
                         dependant_course_components = dependant_components_for_courses_input[(course_name, course_number, class_nbr)]
 
                         for dependant_course_component in dependant_course_components:
-                            # gets first list and second val for course component name as key, ex: ['1210','LAB]
+                            # gets first list and the its second val to act as the as key, ex: ['1210','LAB] the key is
+                            # 'LAB' in the dict
                             course_component_name = dependant_course_component[0][1]
+                            # Adds all the dependant course components (list) of a specific type (LAB, TUT, or LEC)
+                            # with its respective key ('LAB', 'TUT', 'LEC') to dict
                             dependant_course_components_dict[course_component_name] = dependant_course_component
 
                 # if course section is not full
@@ -599,14 +643,16 @@ def main():
 
                         for key, component in dependant_course_components_dict.items():
                             for indiv_component in component:
-                                # select class_nbr of the individual component and check if its full, if not full, then add it
-                                # for enrollment and then stop since they are added in order most preferred to least preferred to list.
+                                # select class_nbr of the individual component and check if its full, if not full, then
+                                # add it for enrollment and then stop for that component since they are added in order most
+                                # preferred to least preferred to list.
                                 if not auto_enroller.course_section_is_full(indiv_component[0]):
                                     selected_components_to_enroll_in.append(indiv_component)
                                     break
 
                         args ={}
 
+                        # sets the args dict if any dependant course components exist
                         for index, selected_component in enumerate(selected_components_to_enroll_in):
                             key = 'dependant_class_nbr_with_course_component_list_' + str(index+1)
                             args[key] = selected_component
@@ -614,6 +660,7 @@ def main():
                         # alert and enroll
                         alert(course)
 
+                        # if args is not empty
                         if args:
                             # checking to see if the key exists in the dict, meaning dict is not empty and bool_swap is True
                             # and whether the value of the key is not None, meaning that user wants to this course with a
@@ -623,6 +670,8 @@ def main():
                                                        course_number, class_nbr, **args)
                             else:
                                 auto_enroller.enroll(course_name, course_number, class_nbr, **args)
+
+                        # if args is empty
                         else:
 
                             # checking to see if the key exists in the dict, meaning dict is not empty and bool_swap is True
@@ -635,7 +684,6 @@ def main():
                             else:
                                 auto_enroller.enroll(course_name, course_number, class_nbr)
 
-                            # engsci 1021a 2626, stats 2244b 1360
                     # if auto enroll not selected alert goes on loop instead until key is pressed
                     else:
                         while True:

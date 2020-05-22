@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import pandas as pd
-import time, os, config, inspect, traceback
+import time, os, config, traceback
 
 
 class CourseScraper:

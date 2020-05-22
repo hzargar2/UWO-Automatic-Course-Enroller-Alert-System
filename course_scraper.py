@@ -20,6 +20,8 @@ class CourseScraper:
 
     def set_all_course_sections_df(self, course_name: str, course_number: str):
 
+        """scrapes timetable for the course and stores all its sections in a pandas Dataframe object"""
+
         try:
 
             # Initializes empty dataframe on each method call if dataframe is not empty to make sure each
@@ -200,11 +202,13 @@ class CourseScraper:
 
     def get_all_course_sections_df(self) -> pd.DataFrame:
 
+        """Retreives pandas Dataframe containing info for all the course sections"""
+
         return self.all_course_sections_df
 
     def get_course_sections_by_component_df(self, component: str) -> pd.DataFrame:
 
-        '''Valid component inputs are 'LEC', 'TUT', 'LAB'''
+        """Valid component inputs are 'LEC', 'TUT', 'LAB'"""
 
         try:
 
@@ -216,6 +220,9 @@ class CourseScraper:
             print(traceback.format_exc())
 
     def get_course_component_for_course_section(self, class_nbr) -> str:
+
+        """Gets the type of course compoenent for a given class nbr"""
+
         try:
             # Iterates over every course section in all the course sections available
             for index, row in self.all_course_sections_df.iterrows():
@@ -227,6 +234,9 @@ class CourseScraper:
             print(traceback.format_exc())
 
     def get_course_location_for_course_section(self, class_nbr) -> str:
+
+        """Gets the location of the course section given its class nbr"""
+
         try:
             # Iterates over every course section in all the course sections available
             for index, row in self.all_course_sections_df.iterrows():
@@ -239,6 +249,8 @@ class CourseScraper:
 
     def get_course_sections_not_full_df(self) -> pd.DataFrame:
 
+        """ Gets all the course sections for the course that are not"""
+
         try:
 
             df = self.all_course_sections_df.loc[self.all_course_sections_df['course_status'] == 'Not Full']
@@ -250,7 +262,8 @@ class CourseScraper:
 
     def course_section_is_full(self, class_nbr: str) -> bool:
 
-        '''Checks if course section with class_nbr is full or not'''
+        """Checks if course section with class_nbr is full or not"""
+
         try:
 
             for i, row in self.all_course_sections_df.iterrows():
@@ -264,6 +277,8 @@ class CourseScraper:
             print(traceback.format_exc())
 
     def course_section_exists(self, class_nbr: str) -> bool:
+
+        """Checks whether course section with a specific class nbr exists or not"""
 
         try:
             # Iterates over every course section in all the course sections available
@@ -279,6 +294,8 @@ class CourseScraper:
 
     def course_section_is_distance_studies(self, class_nbr: str) -> bool:
 
+        """Checks whether the course is a distance studies course"""
+
         try:
             # Iterates over every course section in all the course sections available
             for index, row in self.all_course_sections_df.iterrows():
@@ -293,6 +310,9 @@ class CourseScraper:
             print(traceback.format_exc())
 
     def switch_to_window_handle_with_url(self, url: str):
+
+        """Switches the window with the inputted url, if it doesn't exist, it opens a window and loads
+        that a new page using that url and switches to it"""
 
         try:
             # loops through all windows to see if any of the window urls match the url, if true, then method returns

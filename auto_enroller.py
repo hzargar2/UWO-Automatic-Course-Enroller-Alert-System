@@ -24,6 +24,9 @@ class AutoEnroller(CourseScraper):
 
     def enroll(self, course_name: str, course_number: str, class_nbr: str, dependant_class_nbr_with_course_component_list_1 = None, dependant_class_nbr_with_course_component_list_2 = None):
 
+        """Enrolls in a course given its name, number. class nbr, and any of its dependant components that are required
+        for enrollment (LAB, TUT, LEC)"""
+
         try:
             # Checks to see if the course section exists in the current dataframe. Otherwise, runs set_all_current_sections_df
             # again. Better than running the method each time which slows it down
@@ -144,6 +147,8 @@ class AutoEnroller(CourseScraper):
              dependant_class_nbr_with_course_component_list_1 = None,
              dependant_class_nbr_with_course_component_list_2 = None):
 
+        """Swaps an existing course in the timetable (swap_full_course_name) for new course given its name, number
+        class nbr, and its required dependant components for enrollment (LAB, TUT, LEC)"""
         try:
 
             # Checks to see if the course section exists in the current dataframe. Otherwise, runs set_all_current_sections_df
@@ -289,6 +294,9 @@ class AutoEnroller(CourseScraper):
 
     def has_dependant_course_components(self) -> bool:
 
+        """Checks to see if a given course section has any required course componets that would need to be enrolled
+        in at the same time as the course"""
+
         try:
 
             if self.all_course_sections_df['course_component'].nunique() > 1:
@@ -302,7 +310,12 @@ class AutoEnroller(CourseScraper):
 
     def get_dependant_course_components_df(self, class_nbr: str) -> pd.DataFrame:
 
-        # gets all the course components that are different than the current course class_nbr and componenet that is
+        """Gets all the dependant course components that are possible for enrollment. Need to enroll in dependant
+        components at the same time as the inputted course for enrollment to succeed. Must enroll in at least
+        1 course component of each type. Example. course has a lab, and lec component then must select
+        at least 1 LAB and 1 LEC component for enrollment"""
+
+        # gets all the course components that are different from the current course class_nbr and component that is
         # inputted and returns a df of the results.
         try:
 
@@ -320,6 +333,8 @@ class AutoEnroller(CourseScraper):
             print(traceback.format_exc())
 
     def __select_dependant_course_components(self, class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2):
+
+        """Selects the dependant course components the user inputs from their respective pages when they laod"""
 
         try:
 
@@ -420,6 +435,8 @@ class AutoEnroller(CourseScraper):
 
     def __del_course_in_course_enrollment_worksheet(self, course_number: str, class_nbr: str, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2):
 
+        """ Deletes a course from the course enrollment worksheet (planner) given its course number and class nbr"""
+
         try:
 
             # del course if it already exists in the course enrollment worksheet or else system won't let me add it
@@ -462,6 +479,8 @@ class AutoEnroller(CourseScraper):
 
     def __del_all_courses_in_course_enrollment_worksheet(self):
 
+        """Deletes all courses in the course enrollment worksheet (planner)"""
+
         try:
 
             # del all courses in course enrollment worksheet, makes catching exceptions easier as
@@ -497,6 +516,9 @@ class AutoEnroller(CourseScraper):
             print(traceback.format_exc())
 
     def get_current_course_enrollment_df(self) -> pd.DataFrame:
+
+        """Gets current timetabl of user and all they're currently enrolled course. Returns a pandas Dataframe
+        of results"""
 
         print("RETRIEVING STUDENT'S CURRENT TIMETABLE...")
 
@@ -554,6 +576,8 @@ class AutoEnroller(CourseScraper):
 
     def bool_login_creds_valid(self):
 
+        """Checks to see if login credentials inputted by user and which are the classes attributes are valid"""
+
         try:
             print('TESTING LOGIN CREDENTIALS FOR VALIDITY...')
             # switches to student center login window
@@ -570,9 +594,11 @@ class AutoEnroller(CourseScraper):
             self.browser.find_element_by_xpath("//*[@value='Sign In']").click()
             time.sleep(2)
 
+            # if login failed, return false
             if 'Your User ID and/or Password are invalid.' in self.browser.page_source:
                 self.browser.get(self.student_center_login_url)
                 return False
+            # returns true if successful
             else:
                 self.browser.get(self.student_center_login_url)
                 return True

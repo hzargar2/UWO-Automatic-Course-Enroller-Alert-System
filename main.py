@@ -270,7 +270,7 @@ def boolean_auto_enroll() -> bool:
 
     while True:
 
-        auto_enroll = input('Would you like to AUTO ENROLL in these course(s) as soon as they are available or simply have alerts? (Enter Y or N)\n'
+        auto_enroll = input('Would you like to AUTO ENROLL in these course(s) as soon as they are available or simply have alerts? (Enter Y or N)\n\n'
                             '(Y for auto enroll)\n'
                             '(N for alerts only)\n\n'
                             'Input: ').lower()

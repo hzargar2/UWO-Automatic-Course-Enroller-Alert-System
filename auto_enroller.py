@@ -413,6 +413,7 @@ class AutoEnroller(CourseScraper):
                                         try:
                                             WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable(
                                                 (By.XPATH, "//*[@value='Next']"))).click()
+                                            time.sleep(2)
                                         except NoSuchElementException as e:
                                             print(e)
 

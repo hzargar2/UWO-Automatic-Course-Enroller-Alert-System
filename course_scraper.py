@@ -1,6 +1,9 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 import time, os, config, traceback
 
@@ -40,7 +43,8 @@ class CourseScraper:
             course_number_field = self.browser.find_element_by_id("inputCatalognbr")
             course_number_field.send_keys(course_number)
 
-            self.browser.find_element_by_xpath("//*[text()[contains(., 'Submit')]]").click()
+            WebDriverWait(self.browser, 20).until(EC.presence_of_element_located((By.XPATH, "//*[text()[contains(., 'Submit')]]"))).click()
+            time.sleep(2)
 
             # gets page html
 
@@ -337,6 +341,7 @@ class CourseScraper:
         except:
             print('ERROR:')
             print(traceback.format_exc())
+
 
 
 # scraper = CourseScraper(os.path.join(os.path.dirname(__file__), "chromedriver_mac_81.0.4044.138"), config.urls_dict['Summer'])

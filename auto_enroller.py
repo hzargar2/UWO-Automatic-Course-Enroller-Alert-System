@@ -2,6 +2,9 @@ from bs4 import BeautifulSoup
 import time, os, config, re
 from selenium import webdriver
 from selenium.common.exceptions import *
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 from course_scraper import *
 
 pd.set_option('display.max_rows', 500)
@@ -24,121 +27,122 @@ class AutoEnroller(CourseScraper):
         """Enrolls in a course given its name, number. class nbr, and any of its dependant components that are required
         for enrollment (LAB, TUT, LEC)"""
 
-        try:
-            # Checks to see if the course section exists in the current dataframe. Otherwise, runs set_all_current_sections_df
-            # again. Better than running the method each time which slows it down
-            if not self.course_section_exists(class_nbr):
-                print('Class_nbr not found in current all_course_sections_df attribute. Running set_all_course_sections_df method again.\n')
-                print('Try to have set_all_course_sections_df() execute only once in the code logic to reduce computation time for each course iteration (5s vs 10s).\n ')
-                self.set_all_course_sections_df(course_name, course_number)
-                time.sleep(5)
 
-            print("ATTEMPTING TO ENROLL IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
-            for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
-                if dependant is not None:
-                    print("ATTEMPTING TO ENROLL IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0]))
+        # Checks to see if the course section exists in the current dataframe. Otherwise, runs set_all_current_sections_df
+        # again. Better than running the method each time which slows it down
+        if not self.course_section_exists(class_nbr):
+            print('Class_nbr not found in current all_course_sections_df attribute. Running set_all_course_sections_df method again.\n')
+            print('Try to have set_all_course_sections_df() execute only once in the code logic to reduce computation time for each course iteration (5s vs 10s).\n ')
+            self.set_all_course_sections_df(course_name, course_number)
+            time.sleep(5)
 
-            # switches to student center login window
-            self.switch_to_window_handle_with_url(self.student_center_login_url)
+        print("ATTEMPTING TO ENROLL IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
+        for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
+            if dependant is not None:
+                print("ATTEMPTING TO ENROLL IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0]))
 
-            print('Logging into student center...')
-            username_field = self.browser.find_element_by_id("userid")
-            passsword_field = self.browser.find_element_by_id("pwd")
+        # switches to student center login window
+        self.switch_to_window_handle_with_url(self.student_center_login_url)
 
-            username_field.send_keys(self.username)
-            passsword_field.send_keys(self.password)
+        print('Logging into student center...')
+        username_field = self.browser.find_element_by_id("userid")
+        passsword_field = self.browser.find_element_by_id("pwd")
 
-            # submit button for login info
-            self.browser.find_element_by_xpath("//*[@value='Sign In']").click()
-            time.sleep(2)
+        username_field.send_keys(self.username)
+        passsword_field.send_keys(self.password)
 
-            if 'Your User ID and/or Password are invalid.' in self.browser.page_source:
-                raise Exception("FAILED: LOGIN FAILED.")
+        # submit button for login info
+        WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Sign In']"))).click()
+        print('Submit clicked.')
+        time.sleep(2)
+
+        if 'Your User ID and/or Password are invalid.' in self.browser.page_source:
+            raise Exception("FAILED: LOGIN FAILED.")
 
 
-            print('Logged in.')
+        print('Logged in.')
 
-            # switches to correct frame to be ble to access required elements
-            iframe = self.browser.find_element_by_xpath('//iframe[@name="TargetContent"]')
-            self.browser.switch_to.frame(iframe)
+        # switches to correct frame to be ble to access required elements
+        iframe = WebDriverWait(self.browser, 20).until(EC.visibility_of_element_located((By.XPATH, '//iframe[@name="TargetContent"]')))
+        self.browser.switch_to.frame(iframe)
+        print('Switched iframes.')
 
-            print('Switched iframes.')
+        # 'Enroll in Classes' link button
+        WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'Enroll in Classes'))).click()
+        print("'Enroll in Classes' clicked.")
+        time.sleep(2)
 
-            # 'Enroll in Classes' link button
-            self.browser.find_element_by_partial_link_text('Enroll in Classes').click()
-            time.sleep(2)
+        # del course if it already exists in the course enrollment worksheet or else system won't let me add it
+        # self.__del_course_in_course_enrollment_worksheet(course_number, class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2)
+        self.__del_all_courses_in_course_enrollment_worksheet()
 
-            print('Enroll in Classes clicked.')
+        # class nbr field fill in
+        class_nbr_field = WebDriverWait(self.browser, 20).until(EC.visibility_of_element_located((By.ID, 'DERIVED_REGFRM1_CLASS_NBR')))
+        class_nbr_field.send_keys(class_nbr)
 
-            # del course if it already exists in the course enrollment worksheet or else system won't let me add it
-            # self.__del_course_in_course_enrollment_worksheet(course_number, class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2)
-            self.__del_all_courses_in_course_enrollment_worksheet()
+        # Submit class nbr search
+        WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Enter']"))).click()
+        print('Class nbr submitted.')
+        time.sleep(2)
 
-            # class nbr field fill in
-            class_nbr_field = self.browser.find_element_by_id('DERIVED_REGFRM1_CLASS_NBR')
-            class_nbr_field.send_keys(class_nbr)
-            # Submit class nbr search
-            self.browser.find_element_by_xpath("//*[@value='Enter']").click()
-            time.sleep(2)
+        # need extra step for enrollment if the course has dependant course components like a lab, tut, or lec. A
+        # course can have all 3 components so need to account for the case that a course has all 3.
 
-            print('Class nbr submitted.')
+        if self.has_dependant_course_components():
 
-            # need extra step for enrollment if the course has dependant course components like a lab, tut, or lec. A
-            # course can have all 3 components so need to account for the case that a course has all 3.
+            self.__select_dependant_course_components(class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2)
 
-            if self.has_dependant_course_components():
-
-                self.__select_dependant_course_components(class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2)
-
-                #click 'Next' button on page where we have selected all dependant course sections to go to next page
-                try:
-                    self.browser.find_element_by_xpath("//*[@value='Next']").click()
-                    time.sleep(2)
-                except NoSuchElementException as e:
-                    print(e)
-
-            # Confirm course section(s) selection by clicking 'Next' again.
-            # Course selection then added to course enrollement worksheet.
-            # Still not enrolled. Must finalize the course enrollment work sheet in the next step.
-
+            #click 'Next' button on page where we have selected all dependant course sections to go to next page
             try:
-                self.browser.find_element_by_xpath("//*[@value='Next']").click()
+                WebDriverWait(self.browser, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
                 time.sleep(2)
-            except NoSuchElementException as e:
-                print(e)
+            except:
+                print("'Next' button not found on this page.")
+                pass
 
-            print('Added to course enrollment worksheet.')
+        # Confirm course section(s) selection by clicking 'Next' again.
+        # Course selection then added to course enrollement worksheet.
+        # Still not enrolled. Must finalize the course enrollment work sheet in the next step.
 
-            # click 'Proceed to Step 2 of 3'
-            self.browser.find_element_by_xpath("//*[@value='Proceed to Step 2 of 3']").click()
+        try:
+            WebDriverWait(self.browser, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
             time.sleep(2)
+        except:
+            print("'Next' button not found on this page.")
+            pass
 
-            # raise exception if course enrollemnt times are closed or havn't begun.
-            if 'You cannot enroll at this time.' in self.browser.page_source:
-                raise Exception("FAILED: CANNOT ENROLL IN ({0} {1} '{2}' CLASS NBR {3}). ENROLLMENT HAS NOT BEGUN AND YOU DO NOT HAVE AN AN APPOINTMENT TO ENROLL OR ONLINE ENROLLMENT HAS BEEN CLOSED FOR THIS TERM/SESSION.")
+        print('Added to course enrollment worksheet.')
 
-            # click 'Finish Enrolling
-            self.browser.find_element_by_xpath("//*[@value='Finish Enrolling']").click()
-            time.sleep(3)
+        # click 'Proceed to Step 2 of 3'
+        WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Proceed to Step 2 of 3']"))).click()
+        print("'Proceed go Step 2 of 3' clicked.")
+        time.sleep(2)
 
-            if 'You are already enrolled in this class' in self.browser.page_source:
-                raise Exception("FAILED: YOU ARE ALREADY ENROLLED IN ({0} {1} '{2}' CLASS NBR {3}). IF YOU MEANT TO SWAP LAB/TUT COMPONENTS IN A COURSE YOU ARE ALREADY ENROLLED IN, RESTART THE PROGRAM AND MAKE SURE YOU HAVE SELECTED THE SWAP OPTION WHEN ASKED.".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
+        # raise exception if course enrollemnt times are closed or havn't begun.
+        if 'You cannot enroll at this time.' in self.browser.page_source:
+            raise Exception("FAILED: CANNOT ENROLL IN ({0} {1} '{2}' CLASS NBR {3}). ENROLLMENT HAS NOT BEGUN AND YOU DO NOT HAVE AN AN APPOINTMENT TO ENROLL OR ONLINE ENROLLMENT HAS BEEN CLOSED FOR THIS TERM/SESSION.")
 
-            if 'The enrollment limit for the combined section has been reached.' in self.browser.page_source:
-                raise Exception("FAILED: COURSE ({0} {1} '{2}' CLASS NBR {3}) IS FULL. DISCREPANCY BETWEEN TIMETABLE AND STUDENT CENTER EXISTS.".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
+        # click 'Finish Enrolling
+        WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Finish Enrolling']"))).click()
+        print("'Finish Enrolling' clicked.")
+        time.sleep(2)
 
-            print("SUCCESS: ENROLLED IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
-            for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
-                if dependant is not None:
-                    print("SUCCESS: ENROLLED IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0]))
-            print('')
+        if 'You are already enrolled in this class' in self.browser.page_source:
+            raise Exception("FAILED: YOU ARE ALREADY ENROLLED IN ({0} {1} '{2}' CLASS NBR {3}). IF YOU MEANT TO SWAP LAB/TUT COMPONENTS IN A COURSE YOU ARE ALREADY ENROLLED IN, RESTART THE PROGRAM AND MAKE SURE YOU HAVE SELECTED THE SWAP OPTION WHEN ASKED.".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
 
-            # switches back to student center login page so switch_to_window_handle_with_url doesn't open another a new window
-            # if other methods are ran. Resets the pag destination so less memory is used.
-            self.browser.get(self.student_center_login_url)
+        if 'The enrollment limit for the combined section has been reached.' in self.browser.page_source:
+            raise Exception("FAILED: COURSE ({0} {1} '{2}' CLASS NBR {3}) IS FULL. DISCREPANCY BETWEEN TIMETABLE AND STUDENT CENTER EXISTS.".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
 
-        except Exception as e:
-            print(e)
+        print("SUCCESS: ENROLLED IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
+        for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
+            if dependant is not None:
+                print("SUCCESS: ENROLLED IN ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0]))
+        print('')
+
+        # switches back to student center login page so switch_to_window_handle_with_url doesn't open another a new window
+        # if other methods are ran. Resets the pag destination so less memory is used.
+        self.browser.get(self.student_center_login_url)
+
 
     def swap(self, swap_full_course_name: str, course_name: str, course_number: str, class_nbr: str,
              dependant_class_nbr_with_course_component_list_1 = None,
@@ -163,7 +167,6 @@ class AutoEnroller(CourseScraper):
                 if dependant is not None:
                     print("ATTEMPTING TO SWAP ({4}) FOR ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), dependant[1], dependant[0], swap_full_course_name.upper()))
 
-
             # switches to student center login window
             self.switch_to_window_handle_with_url(self.student_center_login_url)
 
@@ -175,32 +178,32 @@ class AutoEnroller(CourseScraper):
             passsword_field.send_keys(self.password)
 
             # submit button for login info
-            self.browser.find_element_by_xpath("//*[@value='Sign In']").click()
+            WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Sign In']"))).click()
+            print('Submit clicked.')
             time.sleep(2)
+
+            if 'Your User ID and/or Password are invalid.' in self.browser.page_source:
+                raise Exception("FAILED: LOGIN FAILED.")
 
             print('Logged in.')
 
             # switches to correct frame to be ble to access required elements
-            iframe = self.browser.find_element_by_xpath('//iframe[@name="TargetContent"]')
+            iframe = WebDriverWait(self.browser, 20).until(EC.visibility_of_element_located((By.XPATH, '//iframe[@name="TargetContent"]')))
             self.browser.switch_to.frame(iframe)
-
             print('Switched iframes.')
 
             # 'Enroll in Classes' link button
-            self.browser.find_element_by_partial_link_text('Enroll in Classes').click()
-            time.sleep(2)
-
+            WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'Enroll in Classes'))).click()
             print("'Enroll in Classes' clicked.")
+            time.sleep(2)
 
             # 'Swap' link button
-            self.browser.find_element_by_partial_link_text('Swap').click()
+            WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'Swap'))).click()
+            print("'Swap' clicked.")
             time.sleep(2)
 
-            print("'Swap' clicked.")
-
             # Click Swap This Class drop down menu
-
-            self.browser.find_element_by_xpath("//select[@id='DERIVED_REGFRM1_DESCR50$225$']").click()
+            WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//select[@id='DERIVED_REGFRM1_DESCR50$225$']"))).click()
 
             html = self.browser.page_source
             soup = BeautifulSoup(html, 'lxml')
@@ -229,14 +232,18 @@ class AutoEnroller(CourseScraper):
                     # gets the value attributes value in the option tag by searching for whatever it is between the
                     # quotation marks, regular expresion
                     option_tag_value = re.search('value="(.*?)"', option_tag).group(1)
-                    self.browser.find_element_by_xpath("//option[@value='{0}']".format(option_tag_value)).click()
+                    WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//option[@value='{0}']".format(option_tag_value)))).click()
+                    time.sleep(2)
                     break
 
             # input class_nbr of new course that user wants to add and press enter
-            enter_class_nbr = self.browser.find_element_by_xpath("//input[@id='DERIVED_REGFRM1_CLASS_NBR']")
+
+            enter_class_nbr = WebDriverWait(self.browser, 20).until(EC.visibility_of_element_located((By.XPATH, "//input[@id='DERIVED_REGFRM1_CLASS_NBR']")))
             enter_class_nbr.send_keys(class_nbr)
-            self.browser.find_element_by_xpath("//input[@name='DERIVED_REGFRM1_SSR_PB_ADDTOLIST2$106$']").click()
-            time.sleep(3)
+
+            WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//input[@name='DERIVED_REGFRM1_SSR_PB_ADDTOLIST2$106$']"))).click()
+            print("'Enter' clicked.")
+            time.sleep(2)
 
             if 'You do not have a valid appointment for this session' in self.browser.page_source:
                 raise Exception("FAILED: CANNOT ENROLL IN ({0} {1} '{2}' CLASS NBR {3}). ENROLLMENT HAS NOT BEGUN AND YOU DO NOT HAVE AN AN APPOINTMENT TO ENROLL OR ONLINE ENROLLMENT HAS BEEN CLOSED FOR THIS TERM/SESSION.")
@@ -254,27 +261,31 @@ class AutoEnroller(CourseScraper):
                 # total number of next clicks based on number of dependant componenets that are not None
                 # click 'Next' button on page where we have selected all dependant course sections to go to next page
                 try:
-                    self.browser.find_element_by_xpath("//*[@value='Next']").click()
+                    WebDriverWait(self.browser, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
                     time.sleep(2)
-                except NoSuchElementException as e:
-                    print(e)
+                except:
+                    print("'Next' button not found on this page.")
+                    pass
 
             # Confirm course section(s) selection by clicking 'Next' again.
             # Course selection then added to course enrollement worksheet.
             # Still not enrolled. Must finalize the course enrollment work sheet in the next step.
 
             try:
-                self.browser.find_element_by_xpath("//*[@value='Next']").click()
+                WebDriverWait(self.browser, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
                 time.sleep(2)
-            except NoSuchElementException as e:
-                print(e)
+            except:
+                print("'Next' button not found on this page.")
+                pass
 
-            self.browser.find_element_by_xpath("//input[@value='Finish Swapping']").click()
-            time.sleep(3)
+            # Finish Swapping clicked
+            WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Finish Swapping']"))).click()
+            print("'Finish Swapping' clicked.")
+            time.sleep(2)
 
             if ('The enrollment limit for the combined section has been reached.' in self.browser.page_source):
                 raise Exception("FAILED: COURSE ({0} {1} '{2}' CLASS NBR {3}) IS FULL. DISCREPANCY BETWEEN TIMETABLE AND STUDENT CENTER EXISTS.".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr))
-
 
             print("SUCCESS: SWAPPED ({4}) FOR ({0} {1} '{2}' CLASS NBR {3})".format(course_name.upper(), course_number.upper(), self.get_course_component_for_course_section(class_nbr), class_nbr, swap_full_course_name.upper()))
             for dependant in [dependant_class_nbr_with_course_component_list_1,dependant_class_nbr_with_course_component_list_2]:
@@ -286,7 +297,7 @@ class AutoEnroller(CourseScraper):
             # if other methods are ran. Resets the pag destination so less memory is used.
             self.browser.get(self.student_center_login_url)
 
-        except Exception:
+        except Exception as e:
             print(e)
 
     def has_dependant_course_components(self) -> bool:
@@ -396,15 +407,16 @@ class AutoEnroller(CourseScraper):
                                         input_tag_button = str(input_tag_button).split()
                                         input_tag_button_id = input_tag_button[2].replace('id=', '').replace('"', '')
 
-                                        self.browser.find_element_by_id('{0}'.format(input_tag_button_id)).click()
+                                        WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.ID, '{0}'.format(input_tag_button_id)))).click()
+
                                         # click 'Next' button on page where we have selected the lecture component
                                         try:
-                                            self.browser.find_element_by_xpath("//*[@value='Next']").click()
-                                            time.sleep(3)
-                                            break
-
+                                            WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable(
+                                                (By.XPATH, "//*[@value='Next']"))).click()
                                         except NoSuchElementException as e:
                                             print(e)
+
+                                        break
 
 
                             # if componenet is TUT or LAB, we proceed as normal
@@ -425,53 +437,9 @@ class AutoEnroller(CourseScraper):
                                         input_tag_button = str(input_tag_button).split()
                                         input_tag_button_id = input_tag_button[2].replace('id=', '').replace('"', '')
 
-                                        self.browser.find_element_by_id('{0}'.format(input_tag_button_id)).click()
+                                        WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.ID, '{0}'.format(input_tag_button_id)))).click()
                                         break
         except:
-            print(traceback.format_exc())
-
-    def __del_course_in_course_enrollment_worksheet(self, course_number: str, class_nbr: str, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2):
-
-        """ Deletes a course from the course enrollment worksheet (planner) given its course number and class nbr"""
-
-        try:
-
-            # del course if it already exists in the course enrollment worksheet or else system won't let me add it
-            if dependant_class_nbr_with_course_component_list_1:
-                class_nbr_dependant_1 = dependant_class_nbr_with_course_component_list_1[0]
-            else:
-                class_nbr_dependant_1 = None
-
-            if dependant_class_nbr_with_course_component_list_2:
-                class_nbr_dependant_2 = dependant_class_nbr_with_course_component_list_2[0]
-            else:
-                class_nbr_dependant_2 = None
-
-            all_class_nbrs = [class_number for class_number in [class_nbr, class_nbr_dependant_1, class_nbr_dependant_2] if class_number is not None]
-
-            # get current page html
-            html = self.browser.page_source
-            soup = BeautifulSoup(html, 'lxml')
-
-            course_enrollment_worksheet_table = soup.find("table", {"class": "PSLEVEL1GRID"})
-            tr_tags = course_enrollment_worksheet_table.find_all('tr')
-
-            #first tr tag is useless, just table column data
-            tr_tags = tr_tags[1:]
-
-            for tr in tr_tags:
-
-                if 'Your course enrollment worksheet is empty' in tr.text:
-                    break
-
-                for class_number in all_class_nbrs:
-
-                    if tr.find('a', {'id': "P_DELETE$0"}) and course_number.upper() in tr.text and class_number in tr.text:
-                        self.browser.find_element_by_id("P_DELETE$0").click()
-                        time.sleep(2)
-                        break
-
-        except NoSuchElementException:
             print(traceback.format_exc())
 
     def __del_all_courses_in_course_enrollment_worksheet(self):
@@ -530,24 +498,29 @@ class AutoEnroller(CourseScraper):
         passsword_field.send_keys(self.password)
 
         # submit button for login info
-        self.browser.find_element_by_xpath("//*[@value='Sign In']").click()
+        WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Sign In']"))).click()
+        print('Submit clicked.')
         time.sleep(2)
+
+        if 'Your User ID and/or Password are invalid.' in self.browser.page_source:
+            raise Exception("FAILED: LOGIN FAILED.")
+
         print('Logged in.')
 
         # switches to correct frame to be ble to access required elements
-        iframe = self.browser.find_element_by_xpath('//iframe[@name="TargetContent"]')
+        iframe = WebDriverWait(self.browser, 20).until(EC.presence_of_element_located((By.XPATH, '//iframe[@name="TargetContent"]')))
         self.browser.switch_to.frame(iframe)
         print('Switched iframes.')
 
         # 'Enroll in Classes' link button
-        self.browser.find_element_by_partial_link_text('My Weekly Schedule').click()
-        time.sleep(5)
+        WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'My Weekly Schedule'))).click()
         print("'My Weekly Schedule' clicked.")
+        time.sleep(2)
 
         # click List view
-        self.browser.find_element_by_xpath("//input[@id='DERIVED_REGFRM1_SSR_SCHED_FORMAT$258$']").click()
+        WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//input[@id='DERIVED_REGFRM1_SSR_SCHED_FORMAT$258$']"))).click()
         print("'List View' clicked.")
-        time.sleep(4)
+        time.sleep(2)
 
         html = self.browser.page_source
         soup = BeautifulSoup(html, 'lxml')
@@ -578,6 +551,7 @@ class AutoEnroller(CourseScraper):
 
         try:
             print('TESTING LOGIN CREDENTIALS FOR VALIDITY...')
+
             # switches to student center login window
             self.switch_to_window_handle_with_url(self.student_center_login_url)
 
@@ -589,7 +563,8 @@ class AutoEnroller(CourseScraper):
             passsword_field.send_keys(self.password)
 
             # submit button for login info
-            self.browser.find_element_by_xpath("//*[@value='Sign In']").click()
+            WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Sign In']"))).click()
+            print('Submit clicked.')
             time.sleep(2)
 
             # if login failed, return false
@@ -603,4 +578,6 @@ class AutoEnroller(CourseScraper):
 
         except Exception as e:
             print(e)
+
+
 

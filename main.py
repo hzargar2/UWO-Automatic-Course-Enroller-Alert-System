@@ -219,7 +219,7 @@ def get_all_dfs_for_courses(courses_list: list, auto_enroller: AutoEnroller) -> 
         class_nbr = course[2]
 
         auto_enroller.set_all_course_sections_df(course_name, course_number)
-        time.sleep(5)
+        time.sleep(10)
 
         all_dfs_for_courses[(course_name, course_number, class_nbr)] = auto_enroller.all_course_sections_df
 
@@ -273,6 +273,9 @@ def boolean_auto_enroll() -> bool:
         auto_enroll = input('Would you like to AUTO ENROLL in these course(s) as soon as they are available or simply have alerts? (Enter Y or N)\n\n'
                             '(Y for auto enroll)\n'
                             '(N for alerts only)\n\n'
+                            'Note: AUTO-ENROLL will delete the courses in your course enrollment worksheet. These are NOT the \n'
+                            'courses you are enrolled in. They are simply the courses in your planner. This ensures other courses\n'
+                            'do not interfere with the enrollment process.\n\n'
                             'Input: ').lower()
         print('')
 
@@ -730,7 +733,7 @@ def main():
 
                 # course section is full
                 else:
-                    print('{0} {1} {2} is full. Will re-try in 5 seconds.'.format(course_name.upper(), course_number.upper(),class_nbr))
+                    print('{0} {1} {2} is full. Will re-try in 10 seconds.'.format(course_name.upper(), course_number.upper(),class_nbr))
         break
 
     print('PROGRAM TERMINATING.')

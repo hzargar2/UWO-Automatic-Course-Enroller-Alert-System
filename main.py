@@ -540,9 +540,11 @@ def alert(course: list):
         p = vlc.MediaPlayer("Red Alert-SoundBible.com-108009997.mp3")
         p.play()
         time.sleep(3)
-
-        os.system('say "the course {0} {1} with class number {2} is now available!"'.format(course_name.upper(), course_number.upper(), class_nbr))
-
+        try:
+            os.system('say "the course {0} {1} with class number {2} is now available!"'.format(course_name.upper(), course_number.upper(), class_nbr))
+        except:
+            print('Cannot use speaking functionality on this OS. Program continuing...')
+            pass
     except:
         print('ERROR:')
         print(traceback.format_exc())

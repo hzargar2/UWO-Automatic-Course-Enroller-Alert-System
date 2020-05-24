@@ -1,7 +1,7 @@
 # uwo-automatic-course-enroller
 
-Don't need to constantly sit on the timetable page anymore, constantly refreshing hoping that space opens up in a course. This program automatically
-scrapes the UWO timetable eery 10 seconds and alerts users when their desired courses are no longer full. In addition, there are
+You don't need to constantly sit on the timetable page anymore, constantly refreshing hoping that space opens up in a course you want/need really badly. This program automatically
+scrapes the UWO timetable every 10 seconds and alerts users when their desired courses are no longer full. In addition, there are
 optional features for automtic enrollment and swapping once there is course availablility. If these options are not selected, users
 will only recieve alerts.
 

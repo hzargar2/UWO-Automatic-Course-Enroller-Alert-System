@@ -14,3 +14,4 @@ Current timetables supported:
 1. 2019/2020 Fall/Winter
 2. 2020 Summer
 
+This software is open-source and may not be used for commercial purposes.

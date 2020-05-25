@@ -151,9 +151,9 @@ def get_courses_list_input() -> list:
             # gets course names input from user
             print("""Enter the course name, course code, and class nbr, seperated by commas for multiple courses. Each portion of the course must be separated by a space. (Example: COMPSCI 1026A 1625, PSYCHOL 2035A 1210)
             
-            NOTE: If you would like to SWAP into a different LAB/TUT section that is currently full in a course you are 
-            already enrolled in, please enter the class nbr of the LAB/TUT section instead for the class nbr portion of
-            the input AND select the SWAP feature in the program once presented or else it will not work.
+            NOTE: If you would like to SWAP into a different LAB/TUT/LEC section that is currently full in a course you are 
+            already enrolled in, please enter the class nbr of the new LAB/TUT/LEC section instead for the class nbr portion of
+            the input AND select the SWAP feature in the program once presented to you or else it will not work.
             """)
 
             course_names = input('Input: ')

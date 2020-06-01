@@ -101,9 +101,10 @@ class CourseScraper:
             course_start_date = course_section.find_all('td')[16].text.strip()
             course_end_date = course_section.find_all('td')[17].text.strip()
             course_campus = course_section.find_all('td')[18].text.strip()
+            course_delivery_type = course_section.find_all('td')[19].text.strip()
 
             return course_section_number, course_component, class_nbr, course_location, instructor_name, course_notes, \
-                   course_status, course_session, course_start_date, course_end_date, course_campus
+                   course_status, course_session, course_start_date, course_end_date, course_campus, course_delivery_type
 
         except:
             print('ERROR:')
@@ -125,9 +126,10 @@ class CourseScraper:
             course_notes = course_section.find_all('td')[13].text.strip()
             course_status = course_section.find_all('td')[14].text.strip()
             course_campus = course_section.find_all('td')[15].text.strip()
+            course_delivery_type = course_section.find_all('td')[16].text.strip()
 
             return course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
-                   instructor_name, course_notes, course_status, course_campus
+                   instructor_name, course_notes, course_status, course_campus, course_delivery_type
 
         except:
             print('ERROR:')
@@ -143,12 +145,12 @@ class CourseScraper:
             self.all_course_sections_df = pd.DataFrame(
                 columns=['course_section_number', 'course_component', 'class_nbr', 'course_start_time',
                          'course_end_time', 'course_location', 'instructor_name', 'course_notes',
-                         'course_status', 'course_campus'])
+                         'course_status', 'course_campus', 'course_delivery_type'])
 
             # Iterates over every course section in all the course sections available
             for index, course_section in enumerate(course_sections):
                 course_section_number, course_component, class_nbr, course_start_time, course_end_time, course_location, \
-                instructor_name, course_notes, course_status, course_campus = self.__get_attributes_for_fall_winter_course_section(
+                instructor_name, course_notes, course_status, course_campus, course_delivery_type = self.__get_attributes_for_fall_winter_course_section(
                     course_section)
 
                 self.all_course_sections_df = self.all_course_sections_df.append(
@@ -161,7 +163,8 @@ class CourseScraper:
                      'instructor_name': instructor_name,
                      'course_notes': course_notes,
                      'course_status': course_status,
-                     'course_campus': course_campus
+                     'course_campus': course_campus,
+                     'course_delivery_type':course_delivery_type
                      }, ignore_index=True)
 
         except:
@@ -178,12 +181,12 @@ class CourseScraper:
             self.all_course_sections_df = pd.DataFrame(
                 columns=['course_section_number', 'course_component', 'class_nbr', 'instructor_name',
                          'course_notes', 'course_status', 'course_session', 'course_start_date',
-                         'course_end_date', 'course_campus'])
+                         'course_end_date', 'course_campus', 'course_delivery_type'])
 
             # Iterates over every course section in all the course sections available
             for index, course_section in enumerate(course_sections):
                 course_section_number, course_component, class_nbr, course_location, instructor_name, course_notes, \
-                course_status, course_session, course_start_date, course_end_date, course_campus = self.__get_atttibutes_for_summer_course_section(
+                course_status, course_session, course_start_date, course_end_date, course_campus, course_delivery_type = self.__get_atttibutes_for_summer_course_section(
                     course_section)
 
                 self.all_course_sections_df = self.all_course_sections_df.append(
@@ -197,7 +200,8 @@ class CourseScraper:
                      'course_session': course_session,
                      'course_start_date': course_start_date,
                      'course_end_date': course_end_date,
-                     'course_campus': course_campus
+                     'course_campus': course_campus,
+                     'course_delivery_type': course_delivery_type
                      }, ignore_index=True)
 
         except:
@@ -303,10 +307,10 @@ class CourseScraper:
         try:
             # Iterates over every course section in all the course sections available
             for index, row in self.all_course_sections_df.iterrows():
-                if row['class_nbr'] == class_nbr and row['course_session'] == 'Distance Studies':
+                if row['class_nbr'] == class_nbr and 'Distance Studies' in row['course_delivery_type']:
                     return True
 
-                elif row['class_nbr'] == class_nbr and row['course_session'] != 'Distance Studies':
+                elif row['class_nbr'] == class_nbr and 'Distance Studies' not in row['course_delivery_type']:
                     return False
 
         except:

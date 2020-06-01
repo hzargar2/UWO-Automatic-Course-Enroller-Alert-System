@@ -55,7 +55,7 @@ def get_academic_timetable_url_input() -> str:
         timetable = input('\nSelect which academic timetable you would like to set the alert in. (ENTER 1 or 2) \n\n'
                           'Available options: \n'
                           '1. 2020 Summer\n'
-                          '2. 2019/2020 Fall/Winter\n\n'
+                          '2. 2020/2021 Fall/Winter\n\n'
                           'Input: ')
         print('')
 

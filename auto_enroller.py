@@ -22,7 +22,7 @@ class AutoEnroller(CourseScraper):
         self.username = username
         self.password = password
 
-    def enroll(self, course_name: str, course_number: str, class_nbr: str, dependant_class_nbr_with_course_component_list_1 = None, dependant_class_nbr_with_course_component_list_2 = None):
+    def enroll(self, term: str, course_name: str, course_number: str, class_nbr: str, dependant_class_nbr_with_course_component_list_1 = None, dependant_class_nbr_with_course_component_list_2 = None):
 
         """Enrolls in a course given its name, number. class nbr, and any of its dependant components that are required
         for enrollment (LAB, TUT, LEC)"""
@@ -72,6 +72,11 @@ class AutoEnroller(CourseScraper):
         print("'Enroll in Classes' clicked.")
         time.sleep(2)
 
+        # checks to see if there's any term selection table. Occurs if there are 2 terms active for enrollment
+        # at the same time. Usually the summer term crosses over with next year's fall/winter term. Input is a string
+        # containing info about current term so program knows which to select if given the option.
+        self.__select_term(term)
+
         # del course if it already exists in the course enrollment worksheet or else system won't let me add it
         # self.__del_course_in_course_enrollment_worksheet(course_number, class_nbr, dependant_class_nbr_with_course_component_list_1, dependant_class_nbr_with_course_component_list_2)
         self.__del_all_courses_in_course_enrollment_worksheet()
@@ -94,7 +99,7 @@ class AutoEnroller(CourseScraper):
 
             #click 'Next' button on page where we have selected all dependant course sections to go to next page
             try:
-                WebDriverWait(self.browser, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
+                WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
                 time.sleep(2)
             except:
                 print("'Next' button not found on this page.")
@@ -105,7 +110,7 @@ class AutoEnroller(CourseScraper):
         # Still not enrolled. Must finalize the course enrollment work sheet in the next step.
 
         try:
-            WebDriverWait(self.browser, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
+            WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
             time.sleep(2)
         except:
             print("'Next' button not found on this page.")
@@ -144,7 +149,7 @@ class AutoEnroller(CourseScraper):
         self.browser.get(self.student_center_login_url)
 
 
-    def swap(self, swap_full_course_name: str, course_name: str, course_number: str, class_nbr: str,
+    def swap(self, term: str, swap_full_course_name: str, course_name: str, course_number: str, class_nbr: str,
              dependant_class_nbr_with_course_component_list_1 = None,
              dependant_class_nbr_with_course_component_list_2 = None):
 
@@ -196,6 +201,10 @@ class AutoEnroller(CourseScraper):
             WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'Enroll in Classes'))).click()
             print("'Enroll in Classes' clicked.")
             time.sleep(2)
+
+            # checks to see if there's any term selection table. Occurs if there are 2 terms active for enrollment
+            # at the same time. Usually the summer term crosses over with next year's fall/winter term
+            self.__select_term(term)
 
             # 'Swap' link button
             WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 'Swap'))).click()
@@ -480,6 +489,59 @@ class AutoEnroller(CourseScraper):
 
         except NoSuchElementException:
             print(traceback.format_exc())
+
+    def __select_term(self, term):
+
+        '''If the user is prompted to select a term on the page for which they would like to modifyt their courses
+        it prompts the user to select their term from the available options on page'''
+
+        html = self.browser.page_source
+        soup = BeautifulSoup(html, 'lxml')
+
+        # gets main table that also includes the title
+        select_term_table = soup.find("table", {"class": "PSLEVEL2GRIDWBO"})
+
+        table_exists = False
+
+        # gets all tr tags for the main table
+        if select_term_table:
+            tr_tags = select_term_table.find_all('tr')
+
+            # checks to see if the main table has the string 'select a term' in the title since the class for the table
+            # above is a very general class and we could be on a different page that has a table with that same class
+
+            for tr in tr_tags:
+
+                if 'select a term' in tr.text.lower():
+                    table_exists = True
+
+        # if the table has 'select a term' in it's title then we get its sub table since its easier to parse it. It has
+        # our relevant tr tags that we want
+        if table_exists:
+            select_term_sub_table = soup.find("table", {"class": "PSLEVEL2GRID"})
+            tr_tags = select_term_sub_table.find_all('tr')
+            tr_tags = tr_tags[1:]
+
+            for tr in tr_tags:
+
+                td_tags = tr.find_all('td')
+
+                # gets the term name
+                term_string = ' '.join(tr.text.split())
+                input_tag_id = None
+
+                # iterate through the td tags of that tr tag to get the id of its input tag (circle button on page)
+                for td in td_tags:
+
+                    if bool(re.search('id="SSR_DUMMY_RECV1(.*?)"', str(td))):
+                        input_tag_id = re.search('id="SSR_DUMMY_RECV1(.*?)"', str(td)).group(1)
+
+                if ('summer' in term_string.lower() and 'summer' in term.lower()) or ('fall' in term_string.lower() and 'fall' in term.lower()):
+
+                    if input_tag_id:
+                        self.browser.find_element_by_xpath('//input[@id="SSR_DUMMY_RECV1{0}"]'.format(input_tag_id)).click()
+                        self.browser.find_element_by_xpath("//*[@value='Continue']").click()
+                        time.sleep(2)
 
     def get_current_course_enrollment_df(self) -> pd.DataFrame:
 

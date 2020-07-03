@@ -43,7 +43,7 @@ def terms_and_conditions_agreement():
         else:
             return False
 
-def get_academic_timetable_url_input() -> str:
+def get_academic_timetable_url_and_term_input() -> tuple:
 
     """Gets the desired timetable input from the user. Whether they want to check in the Summer or Fall/Winter
     timetables"""
@@ -65,10 +65,12 @@ def get_academic_timetable_url_input() -> str:
         else:
             if timetable == '1':
                 timetable_url = config.urls_dict['Summer']
-                return timetable_url
+                term = 'summer'
+                return timetable_url, term
             elif timetable == '2':
                 timetable_url = config.urls_dict['Fall/Winter']
-                return timetable_url
+                term = 'fall/winter'
+                return timetable_url, term
 
 
 def get_chrome_path_input() -> str:
@@ -562,7 +564,7 @@ def main():
             exit()
 
         # get inputs
-        timetable_url = get_academic_timetable_url_input()
+        timetable_url, term = get_academic_timetable_url_and_term_input()
         chrome_path = get_chrome_path_input()
         username, password = get_login_creds()
 
@@ -695,10 +697,10 @@ def main():
                             # and whether the value of the key is not None, meaning that user wants to this course with a
                             # course in their existing timetable
                             if (course_name, course_number, class_nbr) in swap_dict and swap_dict[course_name, course_number, class_nbr] is not None:
-                                    auto_enroller.swap(swap_dict[course_name, course_number, class_nbr], course_name,
+                                    auto_enroller.swap(term, swap_dict[course_name, course_number, class_nbr], course_name,
                                                        course_number, class_nbr, **args)
                             else:
-                                auto_enroller.enroll(course_name, course_number, class_nbr, **args)
+                                auto_enroller.enroll(term, course_name, course_number, class_nbr, **args)
 
                         # if args is empty
                         else:
@@ -708,10 +710,10 @@ def main():
                             # course in their existing timetable
 
                             if (course_name, course_number, class_nbr) in swap_dict and swap_dict[course_name, course_number, class_nbr] is not None:
-                                    auto_enroller.swap(swap_dict[course_name, course_number, class_nbr], course_name,
+                                    auto_enroller.swap(term, swap_dict[course_name, course_number, class_nbr], course_name,
                                                        course_number, class_nbr)
                             else:
-                                auto_enroller.enroll(course_name, course_number, class_nbr)
+                                auto_enroller.enroll(term, course_name, course_number, class_nbr)
 
                     # if auto enroll not selected alert goes on loop instead until key is pressed
                     else:

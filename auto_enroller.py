@@ -270,7 +270,7 @@ class AutoEnroller(CourseScraper):
                 # total number of next clicks based on number of dependant componenets that are not None
                 # click 'Next' button on page where we have selected all dependant course sections to go to next page
                 try:
-                    WebDriverWait(self.browser, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
+                    WebDriverWait(self.browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
                     time.sleep(2)
                 except:
                     print("'Next' button not found on this page.")
@@ -281,7 +281,7 @@ class AutoEnroller(CourseScraper):
             # Still not enrolled. Must finalize the course enrollment work sheet in the next step.
 
             try:
-                WebDriverWait(self.browser, 5).until(
+                WebDriverWait(self.browser, 20).until(
                     EC.element_to_be_clickable((By.XPATH, "//*[@value='Next']"))).click()
                 time.sleep(2)
             except:

@@ -1,13 +1,12 @@
-# uwo-automatic-course-enroller
+# UWO Automatic Course Enroller/Alert System
 
-You don't need to constantly sit on the timetable page anymore, constantly refreshing hoping that space opens up in a course you want/need really badly. This program automatically
-scrapes the UWO timetable every 10 seconds and alerts users when their desired courses are no longer full. In addition, there are
-optional features for automatic enrollment and swapping once there is course availability. If these options are not selected, users
-will only receive alerts.
+Like many other students, I needed to enroll in a course that was full. With the absense of wait list options in most courses, the traditional solution to this problem is to sit at your computer and constantly refresh the University of Western Ontario timetable, hoping that a spot opens up and you have enough time to enroll in it before someone else does. 
+
+To solve this problem, I have created a program that automatically scrapes the UWO timetable every 10 seconds and alerts users when their desired courses are no longer full. In addition, there are optional features for automatic enrollment and swapping once there is course availability. If these options are not selected, users will only receive alerts.
 
 The user is responsible for making sure that usage of this program does not violate any of the university's policies. The user assumes
 full responsibility for using this software and the author will not be held responsible for any consequences or damages. Use at your own
-risk. If you do not agree to these terms and conditions, do not use this software.
+risk. If you do not agree to these terms and conditions, please do not use this software.
 
 Supported timetables:
 
@@ -16,7 +15,9 @@ Supported timetables:
 
 This software is open-source and may not be used for commercial purposes.
 
-UPDATE #1:
+Note: The program is very hacky and poorly strucutured due to it orignally being a simple script (for alerting) that has been built upon. I also used this program as a learning experience to experiment with inheritance (which is not how I would structure this program if I were to rewrite it). For these reasons, refactoring it is very difficult. However, it works well and performs its specific function perfectly and I hope you will find it of good use.
+
+# UPDATE #1:
 
 Supported timetables:
 

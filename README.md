@@ -15,7 +15,7 @@ Supported timetables:
 
 This software is open-source and may not be used for commercial purposes.
 
-Note: The program is very hacky and poorly strucutured due to it orignally being a simple script (for alerting) that has been built upon. I also used this program as a learning experience to experiment with inheritance (which is not how I would structure this program if I were to rewrite it). For these reasons, refactoring it is very difficult. However, it works well and performs its specific function perfectly and I hope you will find it of good use.
+Note: The program is very hacky and poorly strucutured due to it originally being a simple script (for alerting) that has been built upon. I also used this program as an opportunity to experiment with inheritance (which is not how I would structure this program if I were to rewrite it). For these reasons, refactoring it is very difficult. However, it works well and performs its specific function perfectly and I hope you will find it of good use.
 
 # UPDATE #1:
 

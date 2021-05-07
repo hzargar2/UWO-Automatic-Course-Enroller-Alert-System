@@ -54,7 +54,7 @@ def get_academic_timetable_url_and_term_input() -> tuple:
 
         timetable = input('\nSelect which academic timetable you would like to set the alert in. (ENTER 1 or 2) \n\n'
                           'Available options: \n'
-                          '1. 2020 Summer\n'
+                          '1. 2021 Summer\n'
                           '2. 2020/2021 Fall/Winter\n\n'
                           'Input: ')
         print('')
@@ -83,19 +83,22 @@ def get_chrome_path_input() -> str:
                           'Available options: \n'
                           '1. Mac OS 80.0.3987.106\n'
                           '2. Mac OS 81.0.4044.138\n'
-                          '3. Mac OS 83.0.4103.39\n\n'
-                          '4. Windows 80.0.3987.106\n'
-                          '5. Windows 81.0.4044.138\n'
-                          '6. Windows 83.0.4103.39\n\n'
-                          '7. Linux 80.0.3987.106\n'
-                          '8. Linux 81.0.4044.138\n'
-                          '9. Linux 83.0.4103.39\n\n'
+                          '3. Mac OS 83.0.4103.39\n'
+                          '4. Mac OS 90.0.4430.24\n\n'
+                          '5. Windows 80.0.3987.106\n'
+                          '6. Windows 81.0.4044.138\n'
+                          '7. Windows 83.0.4103.39\n'
+                          '8. Windows 90.0.4430.24\n\n'
+                          '9. Linux 80.0.3987.106\n'
+                          '10. Linux 81.0.4044.138\n'
+                          '11. Linux 83.0.4103.39\n'
+                          '12. Linux 90.0.4430.24\n\n'
                           'Input: ')
         print('')
 
         my_path = os.path.dirname(__file__)
 
-        if chrome_version not in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
+        if chrome_version not in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10','11','12']:
             print('ERROR: Incorrect entry. Make sure you inputted the number and not the text')
             continue
 
@@ -109,23 +112,35 @@ def get_chrome_path_input() -> str:
             chrome_path = os.path.join(my_path, "chromedriver_mac_83_0_4103_39")
 
         elif chrome_version == '4':
-            chrome_path = os.path.join(my_path, "chromedriver_windows_80_0_3987_106.exe")
+            chrome_path = os.path.join(my_path, "chromedriver_mac_90.0.4430.24")
+
 
         elif chrome_version == '5':
-            chrome_path = os.path.join(my_path, "chromedriver_windows_81_0_4044_138.exe")
+            chrome_path = os.path.join(my_path, "chromedriver_windows_80_0_3987_106.exe")
 
         elif chrome_version == '6':
-            chrome_path = os.path.join(my_path, "chromedriver_windows_83_0_4103_39.exe")
+            chrome_path = os.path.join(my_path, "chromedriver_windows_81_0_4044_138.exe")
 
         elif chrome_version == '7':
-            chrome_path = os.path.join(my_path, "chromedriver_linux_80_0_3987_106")
+            chrome_path = os.path.join(my_path, "chromedriver_windows_83_0_4103_39.exe")
 
         elif chrome_version == '8':
+            chrome_path = os.path.join(my_path, "chromedriver_windows_90.0.4430.24.exe")
+
+
+        elif chrome_version == '9':
+            chrome_path = os.path.join(my_path, "chromedriver_linux_80_0_3987_106")
+
+        elif chrome_version == '10':
             chrome_path = os.path.join(my_path, "chromedriver_linux_81_0_4044_138")
 
-        # chrome_version == '9'
+        elif chrome_version == '11':
+            chrome_path = os.path.join(my_path, "chromedriver_linux_83_0_4103_39")
+
+
+        # chrome_version == '12'
         else:
-            chrome_path = os.path.join(my_path, "chromedriver_linux_80_0_3987_106")
+            chrome_path = os.path.join(my_path, "chromedriver_linux_90.0.4430.24")
 
         return chrome_path
 

@@ -24,3 +24,11 @@ Supported timetables:
 1. 2020/2021 Fall/Winter
 2. 2020 Summer
 
+
+# UPDATE #2:
+
+Supported timetables:
+
+1. 2020/2021 Fall/Winter
+2. 2021 Summer
+

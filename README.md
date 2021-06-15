@@ -4,6 +4,8 @@ Like many other students, I needed to enroll in a course that was full. With the
 
 To solve this problem, I have created a program that automatically scrapes the UWO timetable every 10 seconds and alerts users when their desired courses are no longer full. In addition, there are optional features for automatic enrollment and swapping once there is course availability. If these options are not selected, users will only receive alerts.
 
+Simply run main.py
+
 The user is responsible for making sure that usage of this program does not violate any of the university's policies. The user assumes
 full responsibility for using this software and the author will not be held responsible for any consequences or damages. Use at your own
 risk. If you do not agree to these terms and conditions, please do not use this software.
